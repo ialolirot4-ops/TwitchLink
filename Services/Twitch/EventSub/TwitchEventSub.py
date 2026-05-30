@@ -167,7 +167,11 @@ class TwitchEventSub(QtCore.QObject):
         self.logger.info(f"[EventSub] createSubscription → {subscription_type} for {broadcaster_user_id}")
 
     def deleteSubscription(self, subscription_id: str) -> None:
-        """Elimina una suscripción EventSub via HTTP DELETE (best-effort)."""
+        """Elimina una suscripción EventSub via HTTP DELETE (best-effort, fire-and-forget).
+
+        No conectamos finished->deleteLater: NetworkAccessManager tiene setAutoDeleteReplies(True)
+        que ya limpia el QNetworkReply. Un manual deleteLater sobre el reply crudo sería redundante.
+        """
         from Core import App
         from Services.Twitch.GQL.TwitchGQLConfig import Config as GQLConfig
 
@@ -176,9 +180,7 @@ class TwitchEventSub(QtCore.QObject):
         request.setRawHeader(b"Client-Id",     GQLConfig.CLIENT_ID.encode())
         request.setRawHeader(b"Authorization", f"Bearer {App.Account.getOAuthToken()}".encode())
 
-        reply = App.NetworkAccessManager.deleteResource(request)
-        reply.finished.connect(lambda r=reply: r.deleteLater())
-
+        App.NetworkAccessManager.deleteResource(request)  # auto-limpiado por setAutoDeleteReplies
         self.logger.debug(f"[EventSub] deleteSubscription {subscription_id}")
 
     # ── WebSocket interno ──────────────────────────────────────────────────────

@@ -230,6 +230,7 @@ class FavoritesManager(QtCore.QObject):
         self._channels: list[FavoriteChannel] = []
         self._sort     = SortCriteria.STATUS_THEN_VIEWERS
         self._worker: _PollWorker | None = None
+        self._initializing = True
         self._timer    = QtCore.QTimer(self)
         self._timer.setInterval(self.POLL_INTERVAL_MS)
         self._timer.timeout.connect(self.poll)
@@ -342,12 +343,17 @@ class FavoritesManager(QtCore.QObject):
             return
         went_live = ch.update_from_api(channel)
         self.channelUpdated.emit(ch)
-        if went_live:
+        if went_live and not self._initializing:
             self.channelWentLive.emit(ch)
             self._notify_live(ch)
         self.liveCountChanged.emit(self.live_count())
 
     def _on_poll_finished(self) -> None:
+        self._initializing = False
+        # Liberar el QThread anterior para evitar acumulación en sesiones largas
+        if self._worker is not None:
+            self._worker.deleteLater()
+            self._worker = None
         self.pollFinished.emit()
         self.liveCountChanged.emit(self.live_count())
 
@@ -366,7 +372,7 @@ class FavoritesManager(QtCore.QObject):
                 t = ch.stream_title[:100] + "…" if len(ch.stream_title) > 100 else ch.stream_title
                 lines.append(t)
             # Capturar la URL en el closure para que no dependa de ch al momento del click
-            channel_url = ch.url
+            channel_url = ch.twitch_url
             App.Instance.notification.toastMessage(
                 title   = f"🔴  {ch.display_name} está en LIVE",
                 message = "\n".join(lines),

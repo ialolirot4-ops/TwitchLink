@@ -19,7 +19,7 @@
 
 <br/>
 
-**TwitchLink** is a user-friendly GUI tool for downloading Twitch streams, videos, and clips.
+Fork of **TwitchLink** is a user-friendly GUI tool for downloading Twitch streams, videos, and clips.
 Enjoy fast and reliable downloads with powerful features to save your favorite moments and archive streams.
 
 <br/>
