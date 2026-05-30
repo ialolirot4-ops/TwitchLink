@@ -206,15 +206,42 @@ class Temp(Serializable):
 
 
 class Download(Serializable):
+    RETRY_COUNT_MIN = 0
+    RETRY_COUNT_MAX = 10
+    RETRY_INTERVAL_MIN = 1
+    RETRY_INTERVAL_MAX = 60
+    SPEED_LIMIT_MIN = 0      # KB/s — 0 = unlimited
+    SPEED_LIMIT_MAX = 102400 # 100 MB/s
+
     def __init__(self):
-        self._downloadSpeed = 20
+        self._downloadSpeed  = 20
+        self._retryCount     = 3
+        self._retryInterval  = 5
+        self._speedLimitKbps = 0   # 0 = unlimited
 
     def __setup__(self):
+        from Download.Downloader.Core.Engine.Config import Config as EngineConfig
         App.FileDownloadManager.setPoolSize(self._downloadSpeed)
+        EngineConfig.FILE_REQUEST_MAX_RETRY_COUNT = max(
+            self.RETRY_COUNT_MIN, min(self._retryCount, self.RETRY_COUNT_MAX)
+        )
+        EngineConfig.FILE_REQUEST_RETRY_INTERVAL = max(
+            self.RETRY_INTERVAL_MIN, min(self._retryInterval, self.RETRY_INTERVAL_MAX)
+        ) * 1000
+        App.FileDownloadManager.setSpeedLimit(
+            max(0, self._speedLimitKbps) * 1024
+        )
         del self._downloadSpeed
+        del self._retryCount
+        del self._retryInterval
+        del self._speedLimitKbps
 
     def __save__(self):
-        self._downloadSpeed = App.FileDownloadManager.getPoolSize()
+        from Download.Downloader.Core.Engine.Config import Config as EngineConfig
+        self._downloadSpeed  = App.FileDownloadManager.getPoolSize()
+        self._retryCount     = EngineConfig.FILE_REQUEST_MAX_RETRY_COUNT
+        self._retryInterval  = EngineConfig.FILE_REQUEST_RETRY_INTERVAL // 1000
+        self._speedLimitKbps = App.FileDownloadManager.getSpeedLimit() // 1024
         return super().__save__()
 
 

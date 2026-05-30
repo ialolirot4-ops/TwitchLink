@@ -76,6 +76,56 @@ class Settings(QtWidgets.QWidget):
         self._ui.speedSpinBox.setRange(DownloadEngineConfig.FILE_DOWNLOAD_MANAGER_MIN_POOL_SIZE, DownloadEngineConfig.FILE_DOWNLOAD_MANAGER_MAX_POOL_SIZE)
         self._ui.speedSpinBox.valueChanged.connect(self.setDownloadSpeed)
         self.setDownloadSpeed(App.FileDownloadManager.getPoolSize())
+
+        # ── Retry settings group (inserted after downloadSpeedArea) ───────────
+        from AppData.Preferences import Download as DownloadPrefs
+        retryGroup = QtWidgets.QGroupBox(T("#Retry on error"), parent=self)
+        retryForm  = QtWidgets.QFormLayout(retryGroup)
+        retryForm.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+
+        self._retryCountSpin = QtWidgets.QSpinBox(parent=retryGroup)
+        self._retryCountSpin.setRange(DownloadPrefs.RETRY_COUNT_MIN, DownloadPrefs.RETRY_COUNT_MAX)
+        self._retryCountSpin.setSuffix(f"  ({T('#attempts')})")
+        self._retryCountSpin.setValue(DownloadEngineConfig.FILE_REQUEST_MAX_RETRY_COUNT)
+        self._retryCountSpin.valueChanged.connect(self.setRetryCount)
+        retryForm.addRow(T("#Max retries:"), self._retryCountSpin)
+
+        self._retryIntervalSpin = QtWidgets.QSpinBox(parent=retryGroup)
+        self._retryIntervalSpin.setRange(DownloadPrefs.RETRY_INTERVAL_MIN, DownloadPrefs.RETRY_INTERVAL_MAX)
+        self._retryIntervalSpin.setSuffix(f"  ({T('#seconds')})")
+        self._retryIntervalSpin.setValue(DownloadEngineConfig.FILE_REQUEST_RETRY_INTERVAL // 1000)
+        self._retryIntervalSpin.valueChanged.connect(self.setRetryInterval)
+        retryForm.addRow(T("#Retry interval:"), self._retryIntervalSpin)
+
+        # Insert in the downloadSettings tab layout, right after downloadSpeedArea
+        dlTab = self._ui.downloadSpeedArea.parent()
+        dlLayout = dlTab.layout()
+        speedIdx = dlLayout.indexOf(self._ui.downloadSpeedArea)
+        dlLayout.insertWidget(speedIdx + 1, retryGroup)
+
+        # ── Speed limit group ─────────────────────────────────────────────────
+        speedLimitGroup = QtWidgets.QGroupBox(T("#Bandwidth limit"), parent=self)
+        speedLimitLayout = QtWidgets.QVBoxLayout(speedLimitGroup)
+
+        self._speedLimitCheck = QtWidgets.QCheckBox(T("#Limit download speed"), parent=speedLimitGroup)
+        currentLimit = App.FileDownloadManager.getSpeedLimit()
+        self._speedLimitCheck.setChecked(currentLimit > 0)
+        self._speedLimitCheck.toggled.connect(self._onSpeedLimitToggled)
+        speedLimitLayout.addWidget(self._speedLimitCheck)
+
+        limitRow = QtWidgets.QHBoxLayout()
+        self._speedLimitSpin = QtWidgets.QSpinBox(parent=speedLimitGroup)
+        self._speedLimitSpin.setRange(DownloadPrefs.SPEED_LIMIT_MIN + 1, DownloadPrefs.SPEED_LIMIT_MAX)
+        self._speedLimitSpin.setSuffix("  KB/s")
+        self._speedLimitSpin.setValue(max(1, currentLimit // 1024))
+        self._speedLimitSpin.setEnabled(currentLimit > 0)
+        self._speedLimitSpin.valueChanged.connect(self._onSpeedLimitChanged)
+        limitRow.addWidget(self._speedLimitSpin)
+        limitRow.addStretch()
+        speedLimitLayout.addLayout(limitRow)
+
+        dlLayout.insertWidget(speedIdx + 2, speedLimitGroup)
+        # ─────────────────────────────────────────────────────────────────────
         self._ui.resetButton.clicked.connect(self.resetSettings)
         self.reloadBookmarkArea()
 
@@ -131,6 +181,23 @@ class Settings(QtWidgets.QWidget):
             self._ui.resetArea.setEnabled(True)
             self._backupGroup.setEnabled(True)
             self._ui.restrictedLabel.hide()
+        # Sync retry spinboxes with live engine values
+        self._retryCountSpin.blockSignals(True)
+        self._retryCountSpin.setValue(DownloadEngineConfig.FILE_REQUEST_MAX_RETRY_COUNT)
+        self._retryCountSpin.blockSignals(False)
+        self._retryIntervalSpin.blockSignals(True)
+        self._retryIntervalSpin.setValue(DownloadEngineConfig.FILE_REQUEST_RETRY_INTERVAL // 1000)
+        self._retryIntervalSpin.blockSignals(False)
+        # Sync speed limit controls
+        currentLimit = App.FileDownloadManager.getSpeedLimit()
+        self._speedLimitCheck.blockSignals(True)
+        self._speedLimitCheck.setChecked(currentLimit > 0)
+        self._speedLimitCheck.blockSignals(False)
+        self._speedLimitSpin.setEnabled(currentLimit > 0)
+        if currentLimit > 0:
+            self._speedLimitSpin.blockSignals(True)
+            self._speedLimitSpin.setValue(currentLimit // 1024)
+            self._speedLimitSpin.blockSignals(False)
 
     def windowCloseChanged(self, index: int) -> None:
         App.Preferences.general.setSystemTrayEnabled(False if index == 0 else True)
@@ -193,6 +260,27 @@ class Settings(QtWidgets.QWidget):
         App.FileDownloadManager.setPoolSize(speed)
         self._ui.downloadSpeed.setValueSilent(speed)
         self._ui.speedSpinBox.setValueSilent(speed)
+
+    def setRetryCount(self, count: int) -> None:
+        DownloadEngineConfig.FILE_REQUEST_MAX_RETRY_COUNT = count
+        self._retryCountSpin.blockSignals(True)
+        self._retryCountSpin.setValue(count)
+        self._retryCountSpin.blockSignals(False)
+
+    def setRetryInterval(self, seconds: int) -> None:
+        DownloadEngineConfig.FILE_REQUEST_RETRY_INTERVAL = seconds * 1000
+        self._retryIntervalSpin.blockSignals(True)
+        self._retryIntervalSpin.setValue(seconds)
+        self._retryIntervalSpin.blockSignals(False)
+
+    def _onSpeedLimitToggled(self, enabled: bool) -> None:
+        self._speedLimitSpin.setEnabled(enabled)
+        limit = self._speedLimitSpin.value() * 1024 if enabled else 0
+        App.FileDownloadManager.setSpeedLimit(limit)
+
+    def _onSpeedLimitChanged(self, kbps: int) -> None:
+        if self._speedLimitCheck.isChecked():
+            App.FileDownloadManager.setSpeedLimit(kbps * 1024)
 
     def resetSettings(self) -> None:
         if Utils.ask("warning", "#This will reset all settings.\nProceed?", parent=self):

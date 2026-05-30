@@ -183,3 +183,14 @@ class DownloadInfo(Serializable):
 
     def getAbsoluteFileName(self) -> str:
         return Utils.joinPath(self.directory, f"{self.fileName}.{self.fileFormat}")
+
+    def copy(self) -> "DownloadInfo":
+        """Return a shallow-independent copy of this DownloadInfo.
+
+        The copy shares the same immutable content/playback objects but has
+        its own fileName, directory, fileFormat and option fields so the
+        RetryDownloadButton can mutate them without affecting the original
+        history entry.
+        """
+        import copy as _copy
+        return _copy.copy(self)

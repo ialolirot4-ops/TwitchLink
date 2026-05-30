@@ -1,4 +1,5 @@
 from .FileDownloader import FileDownloader
+from .BandwidthLimiter import BandwidthLimiter
 
 from Services.PriorityQueue import PriorityQueue
 
@@ -17,6 +18,9 @@ class FileDownloadManager(QtCore.QObject):
         self._queue = PriorityQueue()
         self._pool = []
         self._tempPool = []
+        # Create the shared limiter and wire it to FileDownloader
+        self._bandwidthLimiter = BandwidthLimiter(parent=self)
+        FileDownloader._bandwidthLimiter = self._bandwidthLimiter
         self._startRequested.connect(self._startDownloadHandler)
         self._cancelRequested.connect(self._cancelDownloadHandler)
 
@@ -48,6 +52,14 @@ class FileDownloadManager(QtCore.QObject):
 
     def getPoolSize(self) -> int:
         return self._poolSize
+
+    def setSpeedLimit(self, bytesPerSecond: int) -> None:
+        """Set a global download bandwidth cap (0 = unlimited)."""
+        self._bandwidthLimiter.setLimit(bytesPerSecond)
+
+    def getSpeedLimit(self) -> int:
+        """Return current cap in bytes/sec (0 = unlimited)."""
+        return self._bandwidthLimiter.getLimit()
 
     def _updateState(self) -> None:
         while len(self._pool) < self._poolSize and len(self._queue) != 0:

@@ -1,4 +1,5 @@
 from ..Config import Config
+from .BandwidthLimiter import BandwidthLimiter
 
 from Core.GlobalExceptions import Exceptions
 
@@ -13,6 +14,10 @@ class FileDownloader(QtCore.QObject):
     _abortRequested = QtCore.pyqtSignal(object)
     _retryRequired = QtCore.pyqtSignal(object)
     _retryRequested = QtCore.pyqtSignal(object)
+
+    # Shared limiter — set by FileDownloadManager on startup.
+    # None means no limiting (unlimited bandwidth).
+    _bandwidthLimiter: BandwidthLimiter | None = None
 
     def __init__(self, networkAccessManager: QtNetwork.QNetworkAccessManager, url: QtCore.QUrl, filePath: str, priority: int = 0, parent: QtCore.QObject | None = None):
         super().__init__(parent=parent)
@@ -30,6 +35,7 @@ class FileDownloader(QtCore.QObject):
         self._retryScheduled: bool = False
         self._retryCount = 0
         self._finished = False
+        self._throttleConnected: bool = False   # True while waiting for refilled signal
         self._retryTimer = QtCore.QTimer(parent=self)
         self._retryTimer.setSingleShot(True)
         self._retryTimer.timeout.connect(self._retryTimerTimeout)
@@ -70,11 +76,40 @@ class FileDownloader(QtCore.QObject):
 
     def _onReadyRead(self) -> None:
         if self._reply.attribute(QtNetwork.QNetworkRequest.Attribute.HttpStatusCodeAttribute) == 200:
-            bytesWritten = self.file.write(self._reply.readAll())
-            if bytesWritten == -1:
-                self._raiseException(Exceptions.FileSystemError(self.file))
+            available = self._reply.bytesAvailable()
+            if available <= 0:
+                return
+
+            limiter = FileDownloader._bandwidthLimiter
+            allowed = limiter.acquire(available) if limiter else available
+
+            if allowed > 0:
+                data = self._reply.read(allowed)
+                if self.file.write(data) == -1:
+                    self._raiseException(Exceptions.FileSystemError(self.file))
+            elif not self._throttleConnected and limiter:
+                # No tokens right now — wait for the next refill tick
+                limiter.refilled.connect(self._onThrottleRefill)
+                self._throttleConnected = True
+
+    def _onThrottleRefill(self) -> None:
+        """Called when the BandwidthLimiter bucket has been refilled."""
+        limiter = FileDownloader._bandwidthLimiter
+        if limiter and self._throttleConnected:
+            limiter.refilled.disconnect(self._onThrottleRefill)
+            self._throttleConnected = False
+        if self._reply is not None and not self._finished and self._error is None:
+            self._onReadyRead()
 
     def _onFinished(self) -> None:
+        # Disconnect throttle listener if still pending
+        limiter = FileDownloader._bandwidthLimiter
+        if self._throttleConnected and limiter:
+            try:
+                limiter.refilled.disconnect(self._onThrottleRefill)
+            except RuntimeError:
+                pass
+            self._throttleConnected = False
         self.file.close()
         self._reply = None
         if self._retryScheduled:
