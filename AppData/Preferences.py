@@ -280,8 +280,8 @@ class Favorites(Serializable):
                 if c.value == self._sort:
                     App.FavoritesManager.set_sort(c)
                     break
-        except Exception:
-            pass
+        except Exception as e:
+            App.Instance.logger.warning(f"[Favorites] Error al aplicar favoritos guardados: {e}")
 
 
 class Preferences(QtCore.QObject):
