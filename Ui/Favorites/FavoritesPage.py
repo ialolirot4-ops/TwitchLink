@@ -29,8 +29,22 @@ _P = {
     "staff":     "#c0392b",
 }
 
-# ─── Caché de imágenes ────────────────────────────────────────────────────────
-_CACHE: dict[str, QtGui.QPixmap] = {}
+# ─── Caché de imágenes (LRU, máx 120 entradas) ───────────────────────────────
+from collections import OrderedDict
+_CACHE: OrderedDict[str, QtGui.QPixmap] = OrderedDict()
+_CACHE_MAX = 120
+
+
+def _cache_put(key: str, pm: QtGui.QPixmap) -> None:
+    """Inserta en el cache LRU y expulsa la entrada más antigua si se supera el límite."""
+    if key in _CACHE:
+        _CACHE.move_to_end(key)
+    else:
+        _CACHE[key] = pm
+        if len(_CACHE) > _CACHE_MAX:
+            _CACHE.popitem(last=False)
+        return
+    _CACHE[key] = pm
 
 
 def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> None:
@@ -38,6 +52,7 @@ def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> No
         return
     key = f"{url}|{w}x{h}|{'c' if circle else 'r'}"
     if key in _CACHE:
+        _CACHE.move_to_end(key)          # marcar como usado recientemente
         label.setPixmap(_CACHE[key])
         return
     from Core import App
@@ -50,7 +65,7 @@ def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> No
             pm.loadFromData(data)
             if not pm.isNull():
                 pm = _scale(pm, w, h, circle)
-                _CACHE[key] = pm
+                _cache_put(key, pm)
                 label.setPixmap(pm)
         reply.deleteLater()
     reply.finished.connect(_done)
