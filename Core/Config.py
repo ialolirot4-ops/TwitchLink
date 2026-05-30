@@ -20,6 +20,14 @@ class Config(Meta):
     APPDATA_FILE = _P(APPDATA_PATH, "settings.json")
     TRACEBACK_FILE = _P(APPDATA_PATH, "traceback")
 
+    # Persistent log directories (AppData — survives TEMP cleanups)
+    LOG_PATH = _P(APPDATA_PATH, "logs")
+    ERROR_LOG_PATH = _P(LOG_PATH, "errors")
+
+    # How many files to keep per category before deleting the oldest
+    MAX_SESSION_LOGS = 10
+    MAX_ERROR_LOGS = 20
+
     TEMP_PATH = _P(OSUtils.getSystemTempPath(), Meta.APP_NAME)
 
     DEFAULT_DIRECTORY = _P(SYSTEM_HOME_ROOT, Meta.APP_NAME)

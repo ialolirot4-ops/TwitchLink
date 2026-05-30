@@ -354,6 +354,7 @@ class FavoritesManager(QtCore.QObject):
     def _notify_live(self, ch: FavoriteChannel) -> None:
         """Notificación nativa de Windows via QSystemTrayIcon."""
         from Core import App
+        from Services.Utils.OSUtils import OSUtils
         try:
             if not App.Preferences.general.isNotifyEnabled():
                 return
@@ -364,10 +365,12 @@ class FavoritesManager(QtCore.QObject):
             if ch.stream_title:
                 t = ch.stream_title[:100] + "…" if len(ch.stream_title) > 100 else ch.stream_title
                 lines.append(t)
-            # Usar App.Instance.notification igual que el resto de la app
+            # Capturar la URL en el closure para que no dependa de ch al momento del click
+            channel_url = ch.url
             App.Instance.notification.toastMessage(
                 title   = f"🔴  {ch.display_name} está en LIVE",
                 message = "\n".join(lines),
+                action  = lambda url=channel_url: OSUtils.openUrl(url),
             )
         except Exception:
             pass

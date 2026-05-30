@@ -7,6 +7,7 @@ from Download.Downloader.Core.StreamDownloader import StreamDownloader
 from Download.Downloader.Core.VideoDownloader import VideoDownloader
 from Download.Downloader.Core.ClipDownloader import ClipDownloader
 from Download.ScheduledDownloadManager import ScheduledDownload
+from Services.Utils.OSUtils import OSUtils
 
 from PyQt6 import QtCore
 
@@ -37,10 +38,13 @@ class GlobalDownloadManager(QtCore.QObject):
         App.DownloadHistory.createHistory(downloader)
         self.downloadStarted(downloader)
         if App.Preferences.general.isNotifyEnabled():
+            # Capture directory string now so the lambda is safe after downloader is GC'd
+            directory = downloader.downloadInfo.directory
             App.Instance.notification.toastMessage(
                 title=T("download-started"),
                 message=f"{T('title')}: {downloader.downloadInfo.content.title}\n{T('file')}: {downloader.downloadInfo.getAbsoluteFileName()}",
-                icon=App.Instance.notification.Icons.Information
+                icon=App.Instance.notification.Icons.Information,
+                action=lambda d=directory: OSUtils.openFolder(d),
             )
 
     def _scheduledDownloaderDestroyed(self, scheduledDownload: ScheduledDownload, downloader: StreamDownloader) -> None:
@@ -65,12 +69,17 @@ class GlobalDownloadManager(QtCore.QObject):
                     title = "download-stopped" if downloader.downloadInfo.type.isStream() else "download-canceled"
                 else:
                     title = "download-aborted"
+                action = None  # Error/abort: clicking just brings the window up
             else:
                 title = "download-complete"
+                # Capture the file path now; clicking opens the containing folder
+                filePath = downloader.downloadInfo.getAbsoluteFileName()
+                action = lambda p=filePath: OSUtils.openFile(p)
             App.Instance.notification.toastMessage(
                 title=T(title),
                 message=f"{T('title')}: {downloader.downloadInfo.content.title}\n{T('file')}: {downloader.downloadInfo.getAbsoluteFileName()}",
-                icon=App.Instance.notification.Icons.Information
+                icon=App.Instance.notification.Icons.Information,
+                action=action,
             )
         self.updateDownloadStats(downloader)
 
