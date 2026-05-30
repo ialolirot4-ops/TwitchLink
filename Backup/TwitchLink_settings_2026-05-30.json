@@ -1,0 +1,1181 @@
+{
+   "version": "str:3.5.4",
+   "setup": {
+      "_needSetup": false,
+      "_termsOfServiceAgreement": "datetime:2026-05-29T21:16:45.884Z",
+      "__type__": "obj:AppData.Preferences:Setup"
+   },
+   "account": {
+      "_accountData": {
+         "data": [
+            {
+               "id": "str:191995849",
+               "login": "str:noedvil",
+               "displayName": "str:NoeDvil",
+               "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/14353639-afdd-44b5-b6b5-6c86f0b5519c-profile_image-300x300.png",
+               "createdAt": "datetime:2018-01-21T08:13:00.596Z",
+               "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+            },
+            {
+               "value": "str:u52bcg92gkh0hagvi6bspfmnv8rlhr",
+               "expiration": "datetime:2027-06-30T08:34:00.000Z",
+               "__type__": "obj:Services.Twitch.Authentication.OAuth.OAuthToken:OAuthToken"
+            }
+         ],
+         "__type__": "tuple"
+      },
+      "__type__": "obj:AppData.Preferences:Account"
+   },
+   "general": {
+      "_openProgressWindow": true,
+      "_notify": true,
+      "_useSystemTray": false,
+      "_bookmarks": [
+         "str:maryblog",
+         "str:girlofnox",
+         "str:mumusiraneitor",
+         "str:vickypalami",
+         "str:juansguarnizo",
+         "str:rivers_gg",
+         "str:arigameplays",
+         "str:robertocein",
+         "str:staryuuki",
+         "str:mictia00",
+         "str:renrize",
+         "str:rociodta",
+         "str:ansichan"
+      ],
+      "__type__": "obj:AppData.Preferences:General"
+   },
+   "templates": {
+      "_streamFilename": "str:[{type}] [{channel_name}] [{date}] {title} {resolution}",
+      "_videoFilename": "str:[{type}] [{channel_name}] [{date}] {title} {resolution}",
+      "_clipFilename": "str:[{type}] [{channel_name}] {title}",
+      "__type__": "obj:AppData.Preferences:Templates"
+   },
+   "advanced": {
+      "_searchExternalContent": true,
+      "_themeMode": "str:dark",
+      "__type__": "obj:AppData.Preferences:Advanced"
+   },
+   "localization": {
+      "_timezone": "timezone:America/Mazatlan",
+      "_translationPackId": "str:en",
+      "__type__": "obj:AppData.Preferences:Localization"
+   },
+   "temp": {
+      "_downloadOptionHistory": {
+         "StreamHistory": {
+            "_audioFormat": "str:aac",
+            "_directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+            "_format": "str:mp4",
+            "skipAds": true,
+            "remux": true,
+            "__type__": "obj:Download.History.DownloadOptionHistory:StreamHistory"
+         },
+         "VideoHistory": {
+            "_audioFormat": "str:aac",
+            "_directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+            "_format": "str:mp4",
+            "_unmuteVideo": false,
+            "_updateTrack": false,
+            "remux": true,
+            "__type__": "obj:Download.History.DownloadOptionHistory:VideoHistory"
+         },
+         "ClipHistory": {
+            "_directory": "str:C:/TwitchLink",
+            "_format": "str:mp4",
+            "__type__": "obj:Download.History.DownloadOptionHistory:ClipHistory"
+         },
+         "ThumbnailHistory": {
+            "_directory": "str:C:/TwitchLink",
+            "_format": "str:jpg",
+            "__type__": "obj:Download.History.DownloadOptionHistory:ThumbnailHistory"
+         },
+         "ScheduledDownloadHistory": {
+            "_audioFormat": "str:aac",
+            "_directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+            "_format": "str:mp4",
+            "skipAds": false,
+            "remux": true,
+            "_filenameTemplate": "str:[{type}] [{channel_name}] [{date}] {title} {resolution}",
+            "__type__": "obj:Download.History.DownloadOptionHistory:ScheduledDownloadHistory"
+         },
+         "__type__": "dict"
+      },
+      "_downloadStats": {
+         "totalFiles": 4,
+         "totalByteSize": 11536957632,
+         "__type__": "dict"
+      },
+      "_windowGeometry": {
+         "MainWindow": "bytes:AdnQywADAAAAAAYEAAAACAAACe8AAAMTAAAGBAAAACcAAAnvAAADEwAAAAAAAAAACgAAAAYEAAAAJwAACe8AAAMT",
+         "DownloadMenu/video": "bytes:AdnQywADAAAAAAcNAAAAAAAACLAAAAO+AAAHDQAAAB8AAAiwAAADvgAAAAAAAAAACgAAAAcNAAAAHwAACLAAAAO+",
+         "ScheduledDownloadSettings": "bytes:AdnQywADAAAAAAZqAAAADwAACVMAAAKvAAAGagAAAC4AAAlTAAACrwAAAAAAAAAACgAAAAZqAAAALgAACVMAAAKv",
+         "DownloadMenu/stream": "bytes:AdnQywADAAAAAAcNAAAAAAAACLAAAAO+AAAHDQAAAB8AAAiwAAADvgAAAAAAAAAACgAAAAcNAAAAHwAACLAAAAO+",
+         "__type__": "dict"
+      },
+      "_blockedContent": {
+         "VisitGitHub": {
+            "data": [
+               "str:2025.11.10",
+               "datetime:2026-06-28T21:18:36.981Z"
+            ],
+            "__type__": "tuple"
+         },
+         "__type__": "dict"
+      },
+      "_downloadHistory": [
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:2779378472",
+                  "title": "str:\ud83c\udf38 BINGOOOOOOO \ud83c\udf38|| ZINGS: ON CARTAS: ON",
+                  "game": {
+                     "id": "str:509658",
+                     "name": "str:Just Chatting",
+                     "boxArtURL": "str:https://static-cdn.jtvnw.net/ttv-boxart/509658-{width}x{height}.jpg",
+                     "displayName": "str:Solo chateando",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "previewThumbnailURL": "str:https://static-cdn.jtvnw.net/cf_vods/d1m7jfoe9zdc1j/c34d279b86eee2c13262_maryblog_319446257498_1779582167//thumb/thumb0-{width}x{height}.jpg",
+                  "owner": {
+                     "id": "str:215480115",
+                     "login": "str:maryblog",
+                     "displayName": "str:maryblog",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/78c16fcc-ce7b-4e90-b2d9-8cc0667f0326-profile_image-300x300.png",
+                     "createdAt": "datetime:2018-04-19T22:32:55.211Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "creator": {
+                     "id": "str:215480115",
+                     "login": "str:maryblog",
+                     "displayName": "str:maryblog",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/78c16fcc-ce7b-4e90-b2d9-8cc0667f0326-profile_image-300x300.png",
+                     "createdAt": "datetime:2018-04-19T22:32:55.211Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "lengthSeconds": 14568.966,
+                  "createdAt": "datetime:2026-05-24T00:22:53.000Z",
+                  "publishedAt": "datetime:2026-05-24T00:22:53.000Z",
+                  "viewCount": 26491,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Video"
+               },
+               "playback": {
+                  "id": "str:2779378472",
+                  "token": {
+                     "signature": "str:76c8fe4bbe3c6cb26ac59784e982bfab489cfead",
+                     "value": "str:{\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"chansub\":{\"restricted_bitrates\":[]},\"device_id\":\"3dd173a990054922b61f6219bbe293fb\",\"expires\":1780162377,\"https_required\":true,\"privileged\":false,\"user_id\":null,\"version\":3,\"vod_id\":2779378472,\"maximum_resolution\":\"FULL_HD\",\"maximum_video_bitrate_kbps\":12500,\"maximum_resolution_reasons\":{\"QUAD_HD\":[\"AUTHZ_NOT_LOGGED_IN\"],\"ULTRA_HD\":[\"AUTHZ_NOT_LOGGED_IN\"]},\"maximum_video_bitrate_kbps_reasons\":[\"AUTHZ_DISALLOWED_BITRATE\"]}",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:VideoPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "chunked": {
+                        "name": "str:1080p60",
+                        "groupId": "str:chunked",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/chunked/index-dvr.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": 1080,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "720p60": {
+                        "name": "str:720p60",
+                        "groupId": "str:720p60",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/720p60/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 720,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "480p30": {
+                        "name": "str:480p",
+                        "groupId": "str:480p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/480p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 480,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "360p30": {
+                        "name": "str:360p",
+                        "groupId": "str:360p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/360p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 360,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "160p30": {
+                        "name": "str:160p",
+                        "groupId": "str:160p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/160p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 160,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "audio_only": {
+                        "name": "str:Audio Only",
+                        "groupId": "str:audio_only",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/c34d279b86eee2c13262_maryblog_319446257498_1779582167/audio_only/index-dvr.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Services.Twitch.Playback.TwitchPlaybackModels:TwitchVideoPlayback"
+               },
+               "range": {
+                  "data": [
+                     null,
+                     null
+                  ],
+                  "__type__": "tuple"
+               },
+               "unmuteVideo": false,
+               "updateTrack": false,
+               "prioritize": false,
+               "remux": true,
+               "directory": "str:C:/TwitchLink",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:[Video] [maryblog] [2026-05-23] \ud83c\udf38 BINGOOOOOOO \ud83c\udf38\uff5c\uff5c ZINGS\uff1a ON CARTAS\uff1a ON 1080p60 (Source)",
+               "fileFormat": "str:ts",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-29T21:33:08.518Z",
+            "completedAt": "datetime:2026-05-29T21:35:22.428Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.29_21-33-08#92c4454c-0ecd-4fae-afc0-d4eb87449d75.log",
+            "progressDetails": {
+               "files": 144,
+               "totalFiles": 1166,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 1801633,
+               "totalMilliseconds": 14568966,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 1440219136,
+               "totalByteSize": 1440219136,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-canceled",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         },
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:2777672712",
+                  "title": "str:\ud83c\udf38 BINGOOOOOOO \ud83c\udf38|| ZINGS: ON CARTAS: ON",
+                  "game": {
+                     "id": "str:509658",
+                     "name": "str:Just Chatting",
+                     "boxArtURL": "str:https://static-cdn.jtvnw.net/ttv-boxart/509658-{width}x{height}.jpg",
+                     "displayName": "str:Solo chateando",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "previewThumbnailURL": "str:https://static-cdn.jtvnw.net/cf_vods/d1m7jfoe9zdc1j/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821//thumb/thumb0-{width}x{height}.jpg",
+                  "owner": {
+                     "id": "str:215480115",
+                     "login": "str:maryblog",
+                     "displayName": "str:maryblog",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/78c16fcc-ce7b-4e90-b2d9-8cc0667f0326-profile_image-300x300.png",
+                     "createdAt": "datetime:2018-04-19T22:32:55.211Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "creator": {
+                     "id": "str:215480115",
+                     "login": "str:maryblog",
+                     "displayName": "str:maryblog",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/78c16fcc-ce7b-4e90-b2d9-8cc0667f0326-profile_image-300x300.png",
+                     "createdAt": "datetime:2018-04-19T22:32:55.211Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "lengthSeconds": 16587.817,
+                  "createdAt": "datetime:2026-05-21T22:00:35.000Z",
+                  "publishedAt": "datetime:2026-05-21T22:00:35.000Z",
+                  "viewCount": 15132,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Video"
+               },
+               "playback": {
+                  "id": "str:2777672712",
+                  "token": {
+                     "signature": "str:90d800c480a5b6e425bceb5410a0dbea2c27c5a9",
+                     "value": "str:{\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"chansub\":{\"restricted_bitrates\":[]},\"device_id\":\"3dd173a990054922b61f6219bbe293fb\",\"expires\":1780162388,\"https_required\":true,\"privileged\":false,\"user_id\":null,\"version\":3,\"vod_id\":2777672712,\"maximum_resolution\":\"FULL_HD\",\"maximum_video_bitrate_kbps\":12500,\"maximum_resolution_reasons\":{\"QUAD_HD\":[\"AUTHZ_NOT_LOGGED_IN\"],\"ULTRA_HD\":[\"AUTHZ_NOT_LOGGED_IN\"]},\"maximum_video_bitrate_kbps_reasons\":[\"AUTHZ_DISALLOWED_BITRATE\"]}",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:VideoPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "chunked": {
+                        "name": "str:1080p60",
+                        "groupId": "str:chunked",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/chunked/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": 1080,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "720p60": {
+                        "name": "str:720p60",
+                        "groupId": "str:720p60",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/720p60/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 720,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "480p30": {
+                        "name": "str:480p",
+                        "groupId": "str:480p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/480p30/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 480,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "360p30": {
+                        "name": "str:360p",
+                        "groupId": "str:360p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/360p30/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 360,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "160p30": {
+                        "name": "str:160p",
+                        "groupId": "str:160p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/160p30/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 160,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "audio_only": {
+                        "name": "str:Audio Only",
+                        "groupId": "str:audio_only",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/6ff28511c19f02ea46f2_maryblog_319511396315_1779400821/audio_only/index-muted-TVFMIFWCTI.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Services.Twitch.Playback.TwitchPlaybackModels:TwitchVideoPlayback"
+               },
+               "range": {
+                  "data": [
+                     null,
+                     null
+                  ],
+                  "__type__": "tuple"
+               },
+               "unmuteVideo": false,
+               "updateTrack": false,
+               "prioritize": false,
+               "remux": true,
+               "directory": "str:C:/TwitchLink",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:[Video] [maryblog] [2026-05-21] \ud83c\udf38 BINGOOOOOOO \ud83c\udf38\uff5c\uff5c ZINGS\uff1a ON CARTAS\uff1a ON 1080p60 (Source)",
+               "fileFormat": "str:ts",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-29T21:33:17.850Z",
+            "completedAt": "datetime:2026-05-29T21:35:22.547Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.29_21-33-17#394e16d1-fe6e-499d-816a-3ffe901535ec.log",
+            "progressDetails": {
+               "files": 0,
+               "totalFiles": 1327,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 0,
+               "totalMilliseconds": 16587817,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 0,
+               "totalByteSize": 0,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-canceled",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         },
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:",
+                  "title": "str:Unknown Stream",
+                  "game": {
+                     "id": "str:",
+                     "name": "str:Unknown",
+                     "boxArtURL": "str:",
+                     "displayName": "str:Unknown",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "type": "str:",
+                  "previewImageURL": "str:",
+                  "broadcaster": {
+                     "id": "str:",
+                     "login": "str:Unknown User",
+                     "displayName": "str:Unknown User",
+                     "profileImageURL": "str:",
+                     "createdAt": "datetime:0001-01-01T00:00:00.000Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "createdAt": "datetime:0001-01-01T00:00:00.000Z",
+                  "viewersCount": 0,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Stream"
+               },
+               "playback": {
+                  "login": "str:",
+                  "token": {
+                     "signature": "str:",
+                     "value": "str:",
+                     "streamAdRequestHandling": {
+                        "__type__": "dict"
+                     },
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:StreamPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "Unknown": {
+                        "name": "str:Unknown",
+                        "groupId": "str:Unknown",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/7c750839bad4076fdb35_maryblog_319547188186_1780092111/chunked/index-dvr.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Search.ExternalPlaybackGenerator:ExternalStreamPlayback"
+               },
+               "skipAds": true,
+               "remux": true,
+               "directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:Cmaradas",
+               "fileFormat": "str:mp4",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-29T22:52:52.239Z",
+            "completedAt": "datetime:2026-05-29T22:58:22.385Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.29_22-52-52#afbd6dc9-b758-4a19-b38e-13dfd5ce0928.log",
+            "progressDetails": {
+               "files": 270,
+               "totalFiles": 270,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 3375000,
+               "totalMilliseconds": 3375000,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 2599944240,
+               "totalByteSize": 2599944240,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-stopped",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         },
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:319657900507",
+                  "title": "str:\u2764\ufe0fMusiVision\u2764\ufe0f !merch \u2764\ufe0f @mumusiraneitor #Cosplay",
+                  "game": {
+                     "id": "str:515025",
+                     "name": "str:Overwatch",
+                     "boxArtURL": "str:https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
+                     "displayName": "str:Overwatch",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "type": "str:live",
+                  "previewImageURL": "str:https://static-cdn.jtvnw.net/previews-ttv/live_user_mumusiraneitor-{width}x{height}.jpg",
+                  "broadcaster": {
+                     "id": "str:106852329",
+                     "login": "str:mumusiraneitor",
+                     "displayName": "str:mumusiraneitor",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/b0856882-52a8-40e3-bf59-127965e6deb5-profile_image-300x300.png",
+                     "createdAt": "datetime:2015-11-11T21:25:27.994Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "createdAt": "datetime:2026-05-30T01:59:51.000Z",
+                  "viewersCount": 43,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Stream"
+               },
+               "playback": {
+                  "login": "str:mumusiraneitor",
+                  "token": {
+                     "signature": "str:8d82472cd661f74c1ed053efae6351c7c262c5b0",
+                     "value": "str:{\"adblock\":false,\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"blackout_enabled\":false,\"channel\":\"mumusiraneitor\",\"channel_id\":106852329,\"chansub\":{\"restricted_bitrates\":[],\"view_until\":1924905600},\"ci_gb\":false,\"geoblock_reason\":\"\",\"device_id\":\"80ebc2fa126b4fbc8939bbf2cd43d638\",\"expires\":1780107652,\"extended_history_allowed\":false,\"game\":\"\",\"hide_ads\":false,\"https_required\":true,\"mature\":false,\"notification_id\":null,\"partner\":false,\"platform\":null,\"player_type\":\"embed\",\"private\":{\"allowed_to_view\":true},\"privileged\":false,\"role\":\"\",\"server_ads\":true,\"show_ads\":true,\"subscriber\":false,\"turbo\":false,\"user_id\":null,\"user_ip\":\"177.228.100.111\",\"version\":3,\"maximum_resolution\":\"FULL_HD\",\"maximum_video_bitrate_kbps\":12500,\"maximum_resolution_reasons\":{\"QUAD_HD\":[\"AUTHZ_NOT_LOGGED_IN\"],\"ULTRA_HD\":[\"AUTHZ_NOT_LOGGED_IN\"]},\"maximum_video_bitrate_kbps_reasons\":[\"AUTHZ_DISALLOWED_BITRATE\"]}",
+                     "streamAdRequestHandling": {
+                        "currentUser": null,
+                        "user": {
+                           "id": "str:106852329",
+                           "login": "str:mumusiraneitor",
+                           "adProperties": {
+                              "adServerDefault": "str:VAES",
+                              "hasPrerollsDisabled": false,
+                              "hasPostrollsDisabled": false,
+                              "hasVodAdsEnabled": true,
+                              "vodArchiveMidrolls": "str:inserted",
+                              "__typename": "str:AdProperties",
+                              "__type__": "dict"
+                           },
+                           "self": null,
+                           "roles": {
+                              "isAffiliate": false,
+                              "isPartner": true,
+                              "__typename": "str:UserRoles",
+                              "__type__": "dict"
+                           },
+                           "broadcastSettings": {
+                              "id": "str:106852329",
+                              "isMature": true,
+                              "__typename": "str:BroadcastSettings",
+                              "__type__": "dict"
+                           },
+                           "stream": {
+                              "id": "str:319657900507",
+                              "broadcasterSoftware": "str:unknown_rtmp",
+                              "game": {
+                                 "id": "str:515025",
+                                 "name": "str:Overwatch",
+                                 "tags": [
+                                    {
+                                       "id": "str:a69f7ffb-ddda-4c05-8d7d-f0b24975a2c3",
+                                       "tagName": "str:Shooter en primera persona",
+                                       "__typename": "str:Tag",
+                                       "__type__": "dict"
+                                    },
+                                    {
+                                       "id": "str:523fe736-fa95-44c7-b22f-13008ca2172c",
+                                       "tagName": "str:Shooter",
+                                       "__typename": "str:Tag",
+                                       "__type__": "dict"
+                                    },
+                                    {
+                                       "id": "str:4d1eaa36-f750-4862-b7e9-d0a13970d535",
+                                       "tagName": "str:Acci\u00f3n",
+                                       "__typename": "str:Tag",
+                                       "__type__": "dict"
+                                    }
+                                 ],
+                                 "__typename": "str:Game",
+                                 "__type__": "dict"
+                              },
+                              "tags": [],
+                              "__typename": "str:Stream",
+                              "__type__": "dict"
+                           },
+                           "__typename": "str:User",
+                           "__type__": "dict"
+                        },
+                        "__type__": "dict"
+                     },
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:StreamPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "chunked": {
+                        "name": "str:1080p (source)",
+                        "groupId": "str:chunked",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/Cs8F-HcdtQdo0BQVG9y5nyu_9pm3SjURe_19dUz0ApYGdVvpiN2UmIFfut25WcbMTnUKzJ2TqteR8egJrghpUNU2aUecINzd7A9BBpVdkQm7y6w_Wni7slp4KUGap_NZYCWXKBPjMFmmZrb3GSn5HsGE40VSyYxIwJnQZFmgQoDKIFs3zhNN7ZYVyRD-6VDIDIhlWmL1j0t_aBrEa5E8STtIpxP1EF4lhy1LB1dBIGNh5Mdc8k60AWSCSy_up6AFaYSKNTwNupJbsSF-RtHMS6eojrY1NAL6npe-e2GPe0Oul4KI7vM6nPaIyj5eh2CctqhlP1y11qiUtKYgTjmAEtBWN0xEIZvFUFQBZ66Q_xWdBUMZyvlNubLlxmZp2RjE51U6NhNrP60OT6PX5o7as_y9M69oae9c1hNosmgC2tfY24NhcWmWj6FGLh5PP51LrttaBF0gEPnWTAxI4YwFOORTnRvAAThBdvWLb_MyaA8f8iFZvyIhTuzz8kChfCILFGADeXrnmcCOIduO6zdGpaXvpEq60GH-0E-cjdt1zc6EuKUuHghTWuwkuRaEeZADyoWZIikYN7g-Ay2t-ni_ZzJRl1mCIHgP2yx8u_EGjgIYHw5VMN1jEGz6YjW4BXQ2zEgyaZTZEl8kfYfzvYDBMz-sOp_WmsPgTzTNX38eWIGpQFIu3L9bJqkpeXjiw5KN6bdmENCG_miMLUgYJJYV-3PHxdVPkHQYGNbtGGpiH7R6bmhT7fOU-qgXbvS02dXXZU38hNqsbiypsjKIFQrGRUtynSYmbLMvbsk5GArmqtl8wVmwV_MPCTcaFGCgQscx18LKsAGXnTmU-hYDJwpvuGgLug4cAVK3Sdjc_q2FT5Q8v67bT1AUrXMXSrUJZsMGTpdeiptflzk5wn4PTw6aNhpVtcyBMSQyzN0ZH4i0U5NRnW5Xx_OCzPxpLTQnRPnRokYaDITleLtnQs1Tjp8IZiABKgl1cy13ZXN0LTIwnw8.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "720p30": {
+                        "name": "str:720p",
+                        "groupId": "str:720p30",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/CsUFfoSv18qi6116mtnUJQX6Iwo_oM9PZH-pDOtGKHru5-qINhKv8Xiwd_chPVsmIW4aTxhvJLGj2nMieIhYw7ACHeJxLieCRUT56VRNq4YAmIcSbdGsAtoKwT-0puiyYdx8fb4ngOj_00bDZJBZqJWQWBs7mkCIgmGerLLpmAs1ou47-tpBpBqtzw4KOtRoJd59gcsJfA4JXE3MGJzaCgml85TxA_RY2P_VN7nYT5a41zJbRrC48OAyWSMvoUmZ1dBXpfoctUZ7zl9qgVKegGhaH9v4jVOZCxum8x5q2tMg0aj3okCfca3-owgGkhYh2QxRRkROpcU16Ill5TkWl2AYEGYstuYhhBCCx9AjuciINi7pd7VZ-j1fjglbOWex9n_5wRtFQLVFwd98DLmeSyuAwbxUBq5Vrqhw3-yOx3k8cNmQ21R6FOeEkUREGUSEU9eMmyoQJ6vr0hVUrP-Fo_SPdZq5Wi-HT0Q5E9FPQaTRAKYpVmKwg_Xm6bB1KvgwUCoNo-Idj1ge-mVUehTGCDernKkjVU6yRadt8dbbAXM99Kij3XCrNRnqK_2yLUGntby9pC_f7jR0AFBY9rZI7bqddSRfK_-CQQhb68ndYsgvAWbpyFe7kWhYWVCqquw43FS7VxySwqTUAOcdv2YF1Reze1cidS2YbOKobr9VEf_Wa6C-09kxdX01tm4LkjjXMtUFa0tZ2VPg3fjoyalU_wwtrT_nezW9mM_wL1Lk-uz19d1dNCAmkatgPC5EkVOgeY2u3BmzPXIZ827ArcFkxMGDASS1HYQ0Jn4CSLN8Q56XtuvSRX8ypNrS_jRTibv51duaqfXWjxz9Y2_wtxnkA5Xgvx6jWvjM9M2fPPkXHEDH13Nlh7udigzCeuXDUemtwmOrcNyoubsM58tyjnK5F2BoRwBfSMnCOoa4-kWM4INBwd5TE-8j4RoMvMzvCPTIftnVHJyKIAEqCXVzLXdlc3QtMjCfDw.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 720,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "480p30": {
+                        "name": "str:480p",
+                        "groupId": "str:480p30",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/Cr0FxKDgouJ0gR7IEMv_3HiWSXgiVy-bJzLhKtPLLe3KqjhBc-dZcuhOKe6IHcc5G0ydGAppHkls55dHd9tSf8V91OfIr_FZ0KLgRAs5-4RDKa36Z7WVL4i3T4_xvj6Cx9-Le0anpEBTlScYOGMT5IQhfwYAuolDbz83RvoEwpdITX4WY6PijF-OOvs01Hc3i0LZomR6etICoiL8jWYuxw4p4IacKShJ25yTtmBaY-ayP4wKWXyO6XWj9kCDE4iMaoohhxv0deyQb2QqVqnFy86NMUqqPZ9JtIZEH1HckSIvhdmbuByH4db2ZYC5j99yKw9HTnTZvrX9OcZrSMCfWvRZojENpocOUNDy_PhGHnRLrQStJjmYl95IkV0fSKcrtyuZ_3V087c8ooER2_OCP6auOFaeEp0257EbuQRW7maiCpkYcYnqW7uyQ-xDA036nthqIjiht1BpspTjXH7XkMHvDMrTFupmtyNOn8_9ZE0N3tzs4OPbbOhw96_xJNVT6vEGHiuSZQSK3yN56nwC9nSrrk8X-g31AXbmngHP8BqzMjXSL0N7OD0WhzZB00wO-UP33izQUvMLYs6iKNANtT6GNU7WNr92OYVINZxOoBySFIjLwxISY_y4-phaEfHHdNCiWPZRHKTD3JHB4oIJuWF53bNj5bItf-pb8Jus8LT9sVxmnbXZoWU9KIgNOhegeRQh3xBfXmJFkqUNUeqjblzWm-ryFVk9QxLTjaK6l0PUKWWXayERBR0FD8H7_NdWcUH0inqngi4I4BrZWS4y6Cx74mIDJirYD445SnaZyG0fJ3GbyHcSyVcs-XrYJyCa22Sx6yfvUbESZ6GLyZ_ofJ6r0iPdGTQttBzvD_WssBrIGtUP5EzxQZEaaZ8Zde_d-wb4l5Lv7kCgLaXIKGFLIi2CBju4lHGcOE4C8aNBa6MaDJnGePovxD93EJ0M8iABKgl1cy13ZXN0LTIwnw8.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 480,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "360p30": {
+                        "name": "str:360p",
+                        "groupId": "str:360p30",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/CrUFzVeYnV5IdHThaMUfEHQilYJrhJ_aqFjW7feI9yDo1RPooRpK9KBvcrlfsNcN9OTO7zjGPJKpKEG25y4eSiiUCPbP8UMnRhAZ610-AAOCoGGKPMbo8IeR20eu7OPPdIhAOurFZFEXICEJmzcMDDfEPpPu4TNCade3bctitsqZ_gAD_wYgjny3iqp-qdzy-96LX37Uc1-yWngpU2psxY3d3VMFLxg--e8mggdTkLNhvqUXWflDdxLXa1LYWH759RCzeVkzQU9GsnCnS94IXW7TVqCpv4mw-RCpMkEEx3tPG08A8YU3okUxtLgf0E6TajmGcuvZtCLixG20Gmeid4M-1guDuG4DgtvI3YSOtD4h3cRaZTDgsmy0nZPnZh3JycdFZoShnrVxATWafeI1rq8yqYGIBIQ1TiPW0ai4ceJl-g0q3HkaDUEt9EgwKFkMy9NVEDOHOPi6CEuSTDfdY0reVMXwpVzoqDRsMwB7WTvbkQEI_mv7EhAKkIC4nUzTvaQAh8shp4LEneumy7jE5Qo6X7zpH9KjUdgapMx5k1Ni2hF92BJRk7-fYKouKtyAn8q9mmNkRQlejaxop1YT1NIWek-XZiFrp3c5GhyII4JiG1nUBDPN4bCD5BezSQz74J1fseIhOI3Pcx4qILgJM4_GURRL2D6I8k1DJfD2cDqADjuF2eoS9mgqHGhiJcQRKMrYa29Bq_Ie9szKHKNkM6_brsWsa2uc0r6XZEGPPeAxWrlRC_y2fgtHUOkI4btda65ql_4Gn5Jkv61HyC-3w2snYZpKIsmCACwfesigwawP4KZKmzIhT0vdSZHgtdgxvrjsd75VOYaktvYHXrQBQ_BQMJtqRPluJgyuolAT1OvXWRLliAKuiJLH91mdzHjr0UfJigw8E3QEDi8OFcTq_mRHY1zmuveCGgz4j2qfFfye9SjTiuUgASoJdXMtd2VzdC0yMJ8P.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 360,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "160p30": {
+                        "name": "str:160p",
+                        "groupId": "str:160p30",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/Cq0FAnZCCvvD9KK6edQzwE_UxxWj3-nU1bBDf4Jmq3v_vR2j9bvKuO5SOtRaWGesGt0UIRviEJu1280pWTHvz1lancLM1k5Vrr2wjbchdmkphlizNewSkwuWa4JXO0rFX-esQy4nP5UKma6fmRUgoZjK9FPOGQyioFlcN1GdL4vbYRAem4FgDxKDSIcOQiov0pGEgx4Km7lh5WTf_VQVbqkuVW6lVSAnRe1C9temwzXhMK31DGobqgVNtsx_Nmsct3pmRZZjKt3Whb3w6I_6xt3kiievh106wkScsBTJOKpGZLrPpaZrP8R8ShSQ5ivdobGFC3akanURVJgRzT-V86sN2SM6qhCsbsM7SiuNqn14i-SUTrv5XOzPWwj7kOqi7hqayEW9rw9aPcgmfroNG3KMoE7lVr-7iR6TtVT7FpR48tNqizaFbHpViTpaYv1lDYZN1Him8JXLly6HQgan2LLkMkhpL_uf11Kcx6SQffgRfpLK29-z7A9DLC8YzedzwoKM0CDiqUavOaP_YiJ_8fnsjqr_v2x7M5iBo3V-csDSiVG8CiMD3Pysh9ntv3cdvMpca1nBDW1axxeK1JqbG3gU9MPCzYc7AFYfWv89_rz_QsIrAv8jRLCt63XB6XTW-LMfkRgXcnCiHruXhQlQTHsjqZbMBzhye3YnfzLcnK-FHO95YiP4cn5xsDGA3vwgM9f7wdiEOihyyRfETGBbp-pRLZmq_aejkVcra8SW2pgk8zYLX10CoHc6WX3L9uN5rDVKESeGpjrezSYUvOpSJE4FpuFGHzJNwIzIPW_ziEtGbM-UNMLUZcjM9koEh6s9D1QZzBV7FiEHssc6cow_cigZMhbLUFHNZQqFLdsrZhglz8VZufIK3Kz2NduJnnkxMY6nlVOey-_PMTZ2I9AEkhoMVjiqb2UHTyiu_GASIAEqCXVzLXdlc3QtMjCfDw.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 160,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "audio_only": {
+                        "name": "str:audio_only",
+                        "groupId": "str:audio_only",
+                        "url": "url:https://usw23.playlist.ttvnw.net/v1/playlist/CqMFRpgFy9M5YAiKUxSw97IEyBWVsYVPPha4y3qEc69JrQKNqhyj_zVZI5pGfokzENFuGbaTVzdzIpj8cNJnoyIKq3wnqeQ1l6YMf68hogXeVEew64I23ZjvsDplASwaKUoGFcg-UsUjfgruaoN1bDcWnuVxNstojTshARinn9KXwYqegk5_FqqdFtew4LZAhN45AO22RxkEIwd9D15qf1sf4fFbjH4Tf6Wd23oEoSChCJo_-aKU6VyIHnKI-D7nVVgtJYGzc5Bgo9ZpNsNFevtQWB8v0FfBG5fYS3Yt-eSVD9nmoe9g8sdIwYHcvxxth_GA6eoz0l_fWo7TslPMe5E3dFkUNSPB-d_WYjRseuD_G7gBurkbj3viBv15TQodcXZJ1RPbaF_vcspoBD9D9wpd_BjUgRu3JmB8p0C7Ayi9fGZJVshv2-q-Xijuat7XS4e5jWLBEw-f-JMGLeoRd7MKdWQM6zCOyt5w8sBjdvFqNxRLf9WzIA9CDdKmRGLHVFTcTf_zTdNFO0URuof0a7ENWU6WlWDxdhvqvDkk1_bnSPkLkHRPCFItngjmZTXPSqQBJY-piaMICzZbi_MniaA82Jc_aYly1bLmbk2meUvaeR4vSX4MKzdvlvTeR40xWJQl-wwrbfN88B8YBsyJ3IyYBR4noZAb0mifPEw5yDxXPBrsd3gw2EHLgb9x_CWJ_R2FgriYDhFqy3YvKhtohhk1W8axSw3_xiOlktcMINSSoQH13E5U72bn9IegJFfjJEJxw4vdZq5WjvuZSdch1RWzGisQ5y6GrHEzoORPlfGpS6ct4xIsRVJTbfUQosvGmbuPap5FwkhGTnH4xJDfZhGMX6OdjOJyUA9CThUpiAeYhkFtIwRdZPMVUldKr64rr_QnqH0RGgze8jOBCCoW0KDyLiEgASoJdXMtd2VzdC0yMJ8P.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Services.Twitch.Playback.TwitchPlaybackModels:TwitchStreamPlayback"
+               },
+               "skipAds": false,
+               "remux": true,
+               "directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:[Stream] [mumusiraneitor] [2026-05-29] \u2764\ufe0fMusiVision\u2764\ufe0f !merch \u2764\ufe0f @mumusiraneitor #Cosplay 1080p (source) (Source)",
+               "fileFormat": "str:mp4",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-30T02:00:52.684Z",
+            "completedAt": "datetime:2026-05-30T03:39:18.841Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.30_02-00-52#ceb73607-261c-4141-beed-b723f56bdddd.log",
+            "progressDetails": {
+               "files": 2997,
+               "totalFiles": 2997,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 5940285,
+               "totalMilliseconds": 5940285,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 4386455600,
+               "totalByteSize": 4386455600,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-complete",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         },
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:2784173674",
+                  "title": "str:\u2764\ufe0fMusiVision\u2764\ufe0f !merch \u2764\ufe0f @mumusiraneitor #Cosplay",
+                  "game": {
+                     "id": "str:515025",
+                     "name": "str:Overwatch",
+                     "boxArtURL": "str:https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
+                     "displayName": "str:Overwatch",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "previewThumbnailURL": "str:https://static-cdn.jtvnw.net/cf_vods/d1m7jfoe9zdc1j/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391//thumb/thumb0-{width}x{height}.jpg",
+                  "owner": {
+                     "id": "str:106852329",
+                     "login": "str:mumusiraneitor",
+                     "displayName": "str:mumusiraneitor",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/b0856882-52a8-40e3-bf59-127965e6deb5-profile_image-300x300.png",
+                     "createdAt": "datetime:2015-11-11T21:25:27.994Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "creator": {
+                     "id": "str:106852329",
+                     "login": "str:mumusiraneitor",
+                     "displayName": "str:mumusiraneitor",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/b0856882-52a8-40e3-bf59-127965e6deb5-profile_image-300x300.png",
+                     "createdAt": "datetime:2015-11-11T21:25:27.994Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "lengthSeconds": 5950.0,
+                  "createdAt": "datetime:2026-05-30T01:59:56.000Z",
+                  "publishedAt": "datetime:2026-05-30T01:59:56.000Z",
+                  "viewCount": 62,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Video"
+               },
+               "playback": {
+                  "id": "str:2784173674",
+                  "token": {
+                     "signature": "str:6fe7995f54e86771b2ffcd08ada5a881c5ec23c1",
+                     "value": "str:{\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"chansub\":{\"restricted_bitrates\":[]},\"device_id\":\"6180e92772524281a07bc48f7482f21d\",\"expires\":1780185306,\"https_required\":true,\"privileged\":false,\"user_id\":null,\"version\":3,\"vod_id\":2784173674,\"maximum_resolution\":\"FULL_HD\",\"maximum_video_bitrate_kbps\":12500,\"maximum_resolution_reasons\":{\"QUAD_HD\":[\"AUTHZ_NOT_LOGGED_IN\"],\"ULTRA_HD\":[\"AUTHZ_NOT_LOGGED_IN\"]},\"maximum_video_bitrate_kbps_reasons\":[\"AUTHZ_DISALLOWED_BITRATE\"]}",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:VideoPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "chunked": {
+                        "name": "str:1080p",
+                        "groupId": "str:chunked",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/chunked/index-dvr.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "720p30": {
+                        "name": "str:720p",
+                        "groupId": "str:720p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/720p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 720,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "480p30": {
+                        "name": "str:480p",
+                        "groupId": "str:480p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/480p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 480,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "360p30": {
+                        "name": "str:360p",
+                        "groupId": "str:360p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/360p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 360,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "160p30": {
+                        "name": "str:160p",
+                        "groupId": "str:160p30",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/160p30/index-dvr.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 160,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "audio_only": {
+                        "name": "str:Audio Only",
+                        "groupId": "str:audio_only",
+                        "url": "url:https://d1m7jfoe9zdc1j.cloudfront.net/23ca5b3e4455100645b5_mumusiraneitor_319657900507_1780106391/audio_only/index-dvr.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Services.Twitch.Playback.TwitchPlaybackModels:TwitchVideoPlayback"
+               },
+               "range": {
+                  "data": [
+                     null,
+                     null
+                  ],
+                  "__type__": "tuple"
+               },
+               "unmuteVideo": false,
+               "updateTrack": false,
+               "prioritize": false,
+               "remux": true,
+               "directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:Peinando stream corto",
+               "fileFormat": "str:mp4",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-30T03:59:45.207Z",
+            "completedAt": "datetime:2026-05-30T04:05:57.712Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.30_03-59-45#44ebcbee-6354-4916-88c3-7d31c103428b.log",
+            "progressDetails": {
+               "files": 595,
+               "totalFiles": 595,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 5950000,
+               "totalMilliseconds": 5950000,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 4539809840,
+               "totalByteSize": 4539809840,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-complete",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         },
+         {
+            "downloadInfo": {
+               "content": {
+                  "id": "str:316672147831",
+                  "title": "str:CHUPI FESTEJANDO A NEPH SIN NEPH (Escribe !badge para conseguir una insignia \u00fanica) | SOCIALS: @dedreviil",
+                  "game": {
+                     "id": "str:509658",
+                     "name": "str:Just Chatting",
+                     "boxArtURL": "str:https://static-cdn.jtvnw.net/ttv-boxart/509658-{width}x{height}.jpg",
+                     "displayName": "str:Solo chateando",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Game"
+                  },
+                  "type": "str:live",
+                  "previewImageURL": "str:https://static-cdn.jtvnw.net/previews-ttv/live_user_elded-{width}x{height}.jpg",
+                  "broadcaster": {
+                     "id": "str:76385901",
+                     "login": "str:elded",
+                     "displayName": "str:elded",
+                     "profileImageURL": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/770ffd55-c47a-4625-9158-595af4987a22-profile_image-300x300.png",
+                     "createdAt": "datetime:2014-12-02T03:28:35.089Z",
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:User"
+                  },
+                  "createdAt": "datetime:2026-05-29T20:08:07.000Z",
+                  "viewersCount": 2278,
+                  "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:Stream"
+               },
+               "playback": {
+                  "login": "str:elded",
+                  "token": {
+                     "signature": "str:4748e55373a67381b700acf74bb4b2c411f15e12",
+                     "value": "str:{\"adblock\":false,\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"blackout_enabled\":false,\"channel\":\"elded\",\"channel_id\":76385901,\"chansub\":{\"restricted_bitrates\":[],\"view_until\":1924905600},\"ci_gb\":false,\"geoblock_reason\":\"\",\"device_id\":\"df49410ca3e645c8b67bb1423b03010d\",\"expires\":1780130733,\"extended_history_allowed\":false,\"game\":\"\",\"hide_ads\":false,\"https_required\":true,\"mature\":false,\"notification_id\":null,\"partner\":false,\"platform\":null,\"player_type\":\"embed\",\"private\":{\"allowed_to_view\":true},\"privileged\":false,\"role\":\"\",\"server_ads\":true,\"show_ads\":true,\"subscriber\":false,\"turbo\":false,\"user_id\":null,\"user_ip\":\"177.228.100.111\",\"version\":3,\"maximum_resolution\":\"FULL_HD\",\"maximum_video_bitrate_kbps\":12500,\"maximum_resolution_reasons\":{\"QUAD_HD\":[\"AUTHZ_NOT_LOGGED_IN\"],\"ULTRA_HD\":[\"AUTHZ_NOT_LOGGED_IN\"]},\"maximum_video_bitrate_kbps_reasons\":[\"AUTHZ_DISALLOWED_BITRATE\"]}",
+                     "streamAdRequestHandling": {
+                        "currentUser": null,
+                        "user": {
+                           "id": "str:76385901",
+                           "login": "str:elded",
+                           "adProperties": {
+                              "adServerDefault": "str:VAES",
+                              "hasPrerollsDisabled": false,
+                              "hasPostrollsDisabled": false,
+                              "hasVodAdsEnabled": true,
+                              "vodArchiveMidrolls": "str:inserted",
+                              "__typename": "str:AdProperties",
+                              "__type__": "dict"
+                           },
+                           "self": null,
+                           "roles": {
+                              "isAffiliate": false,
+                              "isPartner": true,
+                              "__typename": "str:UserRoles",
+                              "__type__": "dict"
+                           },
+                           "broadcastSettings": {
+                              "id": "str:76385901",
+                              "isMature": false,
+                              "__typename": "str:BroadcastSettings",
+                              "__type__": "dict"
+                           },
+                           "stream": {
+                              "id": "str:316672147831",
+                              "broadcasterSoftware": "str:unknown_rtmp",
+                              "game": {
+                                 "id": "str:509658",
+                                 "name": "str:Just Chatting",
+                                 "tags": [
+                                    {
+                                       "id": "str:2610cff9-10ae-4cb3-8500-778e6722fbb5",
+                                       "tagName": "str:IRL (vida real)",
+                                       "__typename": "str:Tag",
+                                       "__type__": "dict"
+                                    }
+                                 ],
+                                 "__typename": "str:Game",
+                                 "__type__": "dict"
+                              },
+                              "tags": [],
+                              "__typename": "str:Stream",
+                              "__type__": "dict"
+                           },
+                           "__typename": "str:User",
+                           "__type__": "dict"
+                        },
+                        "__type__": "dict"
+                     },
+                     "__type__": "obj:Services.Twitch.GQL.TwitchGQLModels:StreamPlaybackAccessToken"
+                  },
+                  "resolutions": {
+                     "chunked": {
+                        "name": "str:1080p60 (source)",
+                        "groupId": "str:chunked",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/CrEF6sp9vs5S2wyqooTDPxxxCXSK9GGuoeV5a-w9n2e1wCwg-jJ-bUktaBm6Xre8J9uTX8v2JWIMWNgR7-LpiHBYvHsL8jO1isS1WO8Ni6WzYiKL_UwzPnZWhiClymCIotjQDZLvHm7meK-IwWiHNB2TtjX6S8ticE7XGC-JHSKvKuWVV1Koa-7hUkunDNZT9reAmdgnjTpVI3YpWRW6QZgREdm9UyiZHmm-8MuSdjWtwLZuu6RVpK4zrDlKXNgKibKZzZ1YLLbt11v8k8bLyagpbcivtxZypj--3RgtW6mjFRZmqaIhwsUx8DTHyAs7B-feGXYSZui-wOpl31YOfSV7t1R9HwLplfPB-HJbgEOtUh2Usr4u2KG4SCk1T6-4y9D4qN-QNGp6XaB2TjUMqP8Eg_5FfI8OnHcu0aQQVdFwoIUwyePdt7feodFD94SWCgXMQ0_RC5IOffVXkIJELaCncOUWNPjjvyS1gDXynmL4KHwwXi4nSyCKuWaL_652JW6Rrc0gGOiyOBbEfHjjI1P7FIfjYDNZvTruYU0kpHO7pzYOoK_wKPoomKZpAREWVWDru-veV3n5AaC4etuWZrTNSDNcUO8tDbTK262RqsyIo_GVeTEKD8SA1J4_7YQa-ArCxxlm5n2EUYV3lkhzNIzLlaTzUGM3CR2Sjv_YR9cCv0vsYmDYl9c2Yt8uFMhXAL0mIsQNUDbfDx2RLBsh8jl8PwPbknFq1ccfLLPq-C7bJME7eIjAuRrmP11rQmogRFV51GpMOY-0gy_l1CbqcGTgo2U6Z48ysvcL21wmUClAZJ19_WPmQEaKaZsiODqQrUfinREXanfVF0pbSMzKcLywPKx3Pi_29C7270-yhN8oINv60XbpP1ogaXqdhD-6KmvOLZffzqWATieKX8GaY0k2vnsaDH72C4gwfYRSn9OwMSABKgl1cy13ZXN0LTIwnw8.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 1080,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "720p60": {
+                        "name": "str:720p60",
+                        "groupId": "str:720p60",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/CqcF87gM5eCnFgcIIGbT8MeOZBfVOTbm_67ND6kUcDg4VUKQzYkD03qtgVVJI89ufTrosrMY-UNSqJtbTE_J-1tZNLPDPUcHaieh0LiVXfVFxMsNxJZq5TN46bJXMQoFmgca04lbd8hK-UhCtFSbe0DaBMD9ZKxioMddFhkz5CDruFiCKYB_wxYaLPw0Fxm4WlSiBr32U4ga_oiQaLJku3S5rmLXc3BZYddo8X69B5Wwuz39RsSURfLEeaNpxbfVtNxfbSgF2VjVobER4n9J1xPjNIeeCmjS38o9VUADC4IEU4aMWSzEw1-zwx2-exRScH0rIPESehO1sa0Eg9OUV0VD0isxh5_ai0Alj2lWhgH8YZ5ePGMIOSmnGVlyDv7vePdMyvOayNCDzoOAxIiqeNSKUsNGfZuDyW482v-b1KRIo1k7bwXtvbcrF_UIE_jE3u8NH-xJTvgyw38BZzoQrAo-PJ6eLGxpmMTz5uZTpQD6Efen0CzFZ4Jrvs0q-EIk59GJ3SaiL5VQLa-hSr8uaL5riCj3aQrqZLtGR4nz4zQmGwDffimvyHCHyh4bHFtkM56yEQ32bkxzYm76bU_zBMQP21SA7cIatwPuarYr-3kUrGaa_N0YYn8N1sZoKPY8tnjJ5XvCQjyliRV8EIzjn9LaTznaphFzwYBR_2F8Tc0GnII6feOiS-lxFKASRqoYeD2Wm8w8BDJhtI16ii_vLC0auv1wCw97WriPpQMIfwRMXm-os6GVSR0JDUx1ByZFjFJ1hzZq-0EU0pYR7c9h60CkeW_KN0TmRLh5GZ5FXQjKDQdJO1ROpB_V-ynLLtEF7CeMGVCIBKsQyxSHMGv3Wq52uRJtV3Z-brH-00axbYCkC8KUu6_hipqomV9MGftrysXQ9ba2TCl2ERoM3zvwvyacsjg1825EIAEqCXVzLXdlc3QtMjCfDw.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 720,
+                        "frameRate": 60,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "480p30": {
+                        "name": "str:480p",
+                        "groupId": "str:480p30",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/Cp8FpXeNlplQdjBMrmthdNL1bPl7G9aZnzfl4tafxptDNOrK-dCr446Ytwuthd_x5cw2ZSPNYeyUUw_pBN8NwHrC2j8ad6G5iZvgm99kk9VcLJg8UkkQZwYWNs4xRBWkI_RQGQnR_PKJuv1DL7s4qz80cnCLgeWjd-nhxB4KNskR4mv-lLA8IA-wnI1xvwtC9N2egtcY_IumDTfe6BNLiSaToYSXoKkkQo3CZWegP4K0R6UQaG1l4qpehid72EjbOqE7Yry7Jcy_UH7RKmDTo3Vi0AfhAoPcQ6apE_keBErymWdBAMKyvG38GWIrc-AHexJf_E_uoQcC9egF-wbCp8Qr1D1-pq2ietlwVkpYzmKmJPmC6bXWr6_BdodwXKWifOHh2mp-DP1cqXnT9IjEnqDczCVAv0CdFvOAHBr2OIdjfk819NLDOl_OcJEfsU9AIgdNwNa7Xf1BvotXxcz9nfZqwa3w3KbXW0VBKO8i-VA-6t3O6CPDjZTyVtxM2k0BBjqDDHzTzwJZ7FNCbvH9zDuhDzeQJXFGiyVT0nvURxBHno0ikmPr2Hlq4mGuw9wk6SVTnegcqnFwf1B2ykG5Of7NkM4MD83VJBqadOjlT-FW62XRmZGXgKLJEOH3gDinq1EMJdNgFag9ialjOrjf6NO1i1--wmynVojSvsDg3Z4DmH-oXx-qbnEVYHCZzVooafWiSSgah1KRpci0qP0QHAZrHJF7U9y5va2me0E5ndVq8neOz5STKfekIocd2W0N1FbKiFaL4xqRd9HO2WLzyxrcDfZWvUHHq5y4OnuMFFkVkC76RwHJKK9MQMOomdJBR6TidCh9cj4oH0L9aQn4pxBvhJ3ZBFggqCoznkcctAUgSViokFPi_lCHvrczgWM2Un4aDE9YN1eHkP1rh872jiABKgl1cy13ZXN0LTIwnw8.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 480,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "360p30": {
+                        "name": "str:360p",
+                        "groupId": "str:360p30",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/CpcF7FP4ky87ag_UySxmPC79pu5TAmOyMCXko9SeBISKtW2owIZOEePuECZoZgTk7IhhTUJrDiwAG6SX-Th7lyP77IjwjcLgYXUEOb-KlHtOkKYXr8k45_kVGg2UDv14C24PHSkL35ZevzOW4Kz661aTqVdJdwdzNRtOSgjAq8lltes9cSd2kDykPuDsSnjj8zF5mACSkzn34pv5iP-1TXy4n1ZxAhFZF13nVG-1ZiD_ljxZc-h1dfnbP3MrTujtcoSTjgxqNiO5EJRzQKR6N55FSKpTRLv9-HahUacKQGuCB5BeJL9n6bO71rZq4heOugAC-iW3ePdjwGSfmKkRWuZO7bHt_4eHGUErdJCIo0vZOz_ukyUqoBu-Hh3mi4lWeFNjmG03xpU5IhbGhaue892y7Y02k78ZxhQ4REG2fxR8BO3NZoIBszIVIAWHI93G6szE2QWw7WFZ6p7x88CwE1Ky8PM7I2Iyy1zoc0sCSdrbjvKeuABO3fxKYAKh-UpIUGp1jD3ACV3pRSsPffFbFxSKYfAP5wWqWYajZ3Gp6pinqxtVWPqa5sD5GCden7uMZ_7K8zm9PV6NCz_vKqkhhVwXc0Us0RZNHwwUErJiZg7MNUVkhUSQaL3KVGQGzteKUmiDYCa5AxhMlGhoqsaWtxpzJUPNm2OrD0VOlF0llkFnp4U-9fefE4Q-USz9HOoS3qIRtiLEHNUaOk4HxdBFL3YDt3VQwmGJY4LlcjIeANJjFuL5LED3xS60JWhGYsM-Y5MaK1YD5rOEXx15HDHCDYS8gltwdO2s7PkGB4JHp_6DPRkdFgqt4PmCMbiiCX_QthOIV-A4Wry3XXVnPE52SCiDzFX7ookoJ0yFcxu9ugzrglUh7y-oTqakGgwCYJg1kxvWKXcflS4gASoJdXMtd2VzdC0yMJ8P.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 360,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "160p30": {
+                        "name": "str:160p",
+                        "groupId": "str:160p30",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/Co8F5wPANk3-T4TVfZ0-KxPMFFMsgKC0NjfxkzEJRduvEk1NuK8mMjvs3fUjgqswhvQd2LXgZIRMD-Z3u2LOYhWngmdm4rB2xC5apu_DPtPrm9WVJwTLysQ1gwg78WBCRfBJ3hN32VJNjJvXvWw7Kismn3G4t2hlCurVIL_hasVRsq26Md_ZxTD2dKJ9IQa3-Ahjsw5V0IHaxtUow7S38WnqUgnCiD_zsQJN0GZ_qdlgBJGyveLjNX06XXjbYIQMmXwjbuD0KvzHEDtx1W-o4VER1VJimjXZ5cltPZ5JbrHQYYSoHmEjcoxHZ53M55qa8ijg4BFYoZ7zlajlbE5ZxKm-9AAgkV0iY1ePJpC6EPKnIYkSafooDiT5TPCqjpUF8YuQ4xHIiQnZoYysNn5VAD4pOIhnpe9ALxJo_AKGjWM2sJ9mahRilSz7as_qfXZvdV11OlxDMsMdBgP6IryZNkMIUkkOdeWFnHnqfNkIWyuxTih0V4rzkOuZm1oKqdsKJnxhqnresFW3G5_4tfZcl2qyt5sbBpL28jr7vfBeEJxt7O-7OeHclIeW7LEi3dT0K5sDoDH-3zZH2YCXzBCSwmQAswHYSWwODCduY2DiNicStf5apaGg11cVmMhkHixEu-AZ33rhSNbYJFy_QiWM7f_pVadlMB9MjS3X3XS4dtL6Oi-uent0GCVFeM8MHiFWGJQitZNLu7Jljhqav4f95GalFnirWhnsie-zVPiZc54nv9yTVR-x-DWjK2Gvv8gb3awOmFSVF5m2xDyW6V700u0x97z0KXJVLs3RHby81GPE0nUb3kJrZbTtNr7T-vRymQjKXdzg1y_bWUvOgc6d5WX4Qpx6uXp4FQKMRCMY5zE57RoMgVVhxzCRretosfQZIAEqCXVzLXdlc3QtMjCfDw.m3u8",
+                        "autoSelect": true,
+                        "default": true,
+                        "quality": 160,
+                        "frameRate": 30,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "audio_only": {
+                        "name": "str:audio_only",
+                        "groupId": "str:audio_only",
+                        "url": "url:https://usw24.playlist.ttvnw.net/v1/playlist/CoUFAxPLeUEDPS0Gh-99pb32294B5DfZCW4fSPF7wDJv4rgxSy8GZeY2hA341JZLUcB7NI6SsZKLsQdRGGR1Y6GHhQVJaw5oG2l2Oj1mzCtzpDtjPK2b7JlrhElj21l8P1jQiATE9UefpXGvLjejh5FB4vNW3QrGCYo4ghAgP2SzEHW5rHjLN7b1iMyZBDGZvSxl2w2tltjTBa2nMEURS83tlzqmRZxT_sjeQBPJhw_3wtB1-W5d_4jEYCkCc8m7XlBcMwmfCWKPh0UY26VSJ-Gf8WRkpaeZYhHwtxTgmldR6BCJJkLgt71BkxLhXgb-GHK6uOopyydgEsWO3qyxSx3GNw5m7G23G0eBdabTiLMSSN5TkcTSQ9g50dmujaX_Nn4wTsJinP0vEVby5VYbBSGwUNAyEh6_b5ghjICpzcTpb5Xkuzn7I-wrjz1FljHctFUVnSxSRlrjY70debHklxbpqGi6z36EhxddrbJ17-rvDNBS8Ycbh8ZOZ32U824FFpG0eV96JoLcvWmRAJwrP8i0qW4PFWK2O9F0xa1Q87kbj8ope3yhH7A-boUZ2WywhWsoExenzAvi7EdO2bk7Rl4dK5qjfgOQL4eDqMFc6W069YPaIqK2uFKN67TDTmBioNrB3t8xb4apRqfRKvTlI8abiuU3QOAtArNTk9PbGaZxL-t56Ivx5sRsdRNd3cKnb7mxGtuCvBU90eRG2cQFd2iu2DFbp8UmxAGJTkgwglQt4AjPTZh4VrP6eJ07FvjqdztkX4oGImwmlXS3NZPBaXt4s9g-wQB4_3l4mFAg8J1UChxUsPpad7lFQ-yH9lPDIqSncb6xjsgl2T7wEFqhV5zlxFWl8KLBGgz7pTRf1ptHQxbbdPEgASoJdXMtd2VzdC0yMJ8P.m3u8",
+                        "autoSelect": false,
+                        "default": false,
+                        "quality": null,
+                        "frameRate": null,
+                        "__type__": "obj:Services.Playlist.Resolution:Resolution"
+                     },
+                     "__type__": "dict"
+                  },
+                  "__type__": "obj:Services.Twitch.Playback.TwitchPlaybackModels:TwitchStreamPlayback"
+               },
+               "skipAds": false,
+               "remux": true,
+               "directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+               "selectedResolutionIndex": 0,
+               "fileName": "str:[Stream] [elded] [2026-05-29] CHUPI FESTEJANDO A NEPH SIN NEPH (Escribe !badge para conseguir una insignia \u00fanica) \uff5c SOCIALS\uff1a @dedreviil 1080p60 (Source)",
+               "fileFormat": "str:mp4",
+               "__type__": "obj:Download.DownloadInfo:DownloadInfo"
+            },
+            "startedAt": "datetime:2026-05-30T08:25:32.976Z",
+            "completedAt": "datetime:2026-05-30T08:25:50.235Z",
+            "logFile": "str:C:/Users/alend/AppData/Local/Temp/TwitchLink/TwitchLink_Download_2026.05.30_08-25-32#f18a6318-a0b2-4f13-a8eb-ba6c17b4acc4.log",
+            "progressDetails": {
+               "files": 10,
+               "totalFiles": 10,
+               "mutedFiles": 0,
+               "skippedFiles": 0,
+               "missingFiles": 0,
+               "milliseconds": 19206,
+               "totalMilliseconds": 19206,
+               "mutedMilliseconds": 0,
+               "skippedMilliseconds": 0,
+               "missingMilliseconds": 0,
+               "byteSize": 10747952,
+               "totalByteSize": 10747952,
+               "__type__": "obj:Download.History.DownloadHistory:ProgressDetails"
+            },
+            "result": "str:download-stopped",
+            "error": null,
+            "__type__": "obj:Download.History.DownloadHistory:DownloadHistory"
+         }
+      ],
+      "__type__": "obj:AppData.Preferences:Temp"
+   },
+   "download": {
+      "_downloadSpeed": 20,
+      "__type__": "obj:AppData.Preferences:Download"
+   },
+   "scheduledDownloads": {
+      "_enabled": true,
+      "_scheduledDownloadPresets": [
+         {
+            "channel": "str:mumusiraneitor",
+            "filenameTemplate": "str:[{type}] [{channel_name}] [{date}] {title} {resolution}",
+            "directory": "str:D:/Streams/Grabaciones_Raw/Streams",
+            "preferredQualityIndex": 0,
+            "preferredFrameRateIndex": 0,
+            "fileFormat": "str:mp4",
+            "skipAds": false,
+            "remux": true,
+            "preferredResolutionOnly": false,
+            "enabled": true,
+            "__type__": "obj:Download.ScheduledDownloadPreset:ScheduledDownloadPreset"
+         }
+      ],
+      "__type__": "obj:AppData.Preferences:ScheduledDownloads"
+   },
+   "favorites": {
+      "_channels": [
+         {
+            "login": "str:maryblog",
+            "display_name": "str:maryblog",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/78c16fcc-ce7b-4e90-b2d9-8cc0667f0326-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:16:55.983082",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:elded",
+            "display_name": "str:elded",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/770ffd55-c47a-4625-9158-595af4987a22-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:18:52.181347",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:juansguarnizo",
+            "display_name": "str:juansguarnizo",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/74586414-e27b-4347-89c5-109e42ac3e1d-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:21:17.695926",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:vickypalami",
+            "display_name": "str:vickypalami",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/fd9bf69a-913f-4040-927e-cbdb21f40bd2-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:21:29.918353",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:girlofnox",
+            "display_name": "str:GirlOfNox",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/e191ebd5-15d2-4a13-b6fc-4667ab307965-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:22:58.258549",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:rociodta",
+            "display_name": "str:rociodta",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/5d156c45-dbe6-4dae-8b91-adb5597cf054-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:23:03.491393",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:renrize",
+            "display_name": "str:RenRize",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/a969a69b-15a3-429e-98f1-0e3507ef43ad-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:38:13.218220",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:cris_palazuelos",
+            "display_name": "str:Cris_Palazuelos",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/2f7b4f63-5f74-4c33-bc16-66e0c8c7cd29-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:38:37.732532",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:staryuuki",
+            "display_name": "str:Staryuuki",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/fa589af4-5637-45f1-a179-d1cded652df8-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:39:19.086032",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:robertocein",
+            "display_name": "str:RobertoCein",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/2a65e4f7-4852-48ae-b3c9-1b75af7bd36d-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:39:31.291579",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:atinycherry",
+            "display_name": "str:aTinyCherry",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/ced27fad-51ee-482d-baee-ab217d26cc23-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:39:49.141023",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:ansichan",
+            "display_name": "str:AnsiChan",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/fea2f4e4-7bfa-414f-8eca-76bedde9662d-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T21:40:07.266079",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:mictia00",
+            "display_name": "str:Mictia00",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/f23b8622-827d-4d93-a46f-6b655247b0aa-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T22:00:47.602758",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:mariotq",
+            "display_name": "str:MarioTQ",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/6912ed6d-bf47-4024-822c-d2adccd999ea-profile_image-300x300.png",
+            "added_at": "str:2026-05-29T23:49:45.811016",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:rivers_gg",
+            "display_name": "str:rivers_gg",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/10e9e873-20c9-435f-9894-7689ff5d2b1a-profile_image-300x300.png",
+            "added_at": "str:2026-05-30T03:38:38.513115",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:vitacelestine_",
+            "display_name": "str:VitaCelestine_",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/fd2ba607-382e-4bf8-b54d-00b47d74cdf0-profile_image-300x300.png",
+            "added_at": "str:2026-05-30T07:54:28.127293",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:sharonwinner",
+            "display_name": "str:SharonWinner",
+            "profile_image_url": "str:https://static-cdn.jtvnw.net/jtv_user_pictures/194943e2-0111-44ea-8549-18614783d215-profile_image-300x300.png",
+            "added_at": "str:2026-05-30T08:12:58.214153",
+            "__type__": "dict"
+         },
+         {
+            "login": "str:danielaazuaje_",
+            "display_name": "str:danielaazuaje_",
+            "profile_image_url": "str:",
+            "added_at": "str:2026-05-30T08:14:22.172027",
+            "__type__": "dict"
+         }
+      ],
+      "_sort": "str:status_viewers",
+      "__type__": "obj:AppData.Preferences:Favorites"
+   },
+   "__type__": "dict"
+}
