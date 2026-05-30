@@ -20,7 +20,7 @@ class DownloadHistoryView(QtWidgets.QWidget):
             parent=self
         )
         self._retryButtonManager.accountPageShowRequested.connect(self.accountPageShowRequested)
-        self._ui.downloadViewControlBar.retryButton.setVisible()
+        # Visibility is handled by reloadHistoryData() below
         self._ui.downloadViewControlBar.openFolderButton.clicked.connect(self.openFolder)
         self._ui.downloadViewControlBar.openFolderButton.setVisible()
         self._ui.downloadViewControlBar.openFileButton.clicked.connect(self.openFile)
@@ -41,19 +41,25 @@ class DownloadHistoryView(QtWidgets.QWidget):
         self._ui.startedAt.setText(self.downloadHistory.startedAt)
         self._ui.completedAt.setText(T("unknown") if self.downloadHistory.completedAt == None else self.downloadHistory.completedAt)
         self._ui.result.setText(T(self.downloadHistory.result) if self.downloadHistory.error == None else f"{T(self.downloadHistory.result)}\n({T(self.downloadHistory.error)})")
-        if self.downloadHistory.result in (self.downloadHistory.Result.completed, self.downloadHistory.Result.stopped):
+        if self.downloadHistory.result == self.downloadHistory.Result.downloading:
+            # Download still in progress — retry makes no sense
+            self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
+            self._ui.downloadViewControlBar.retryButton.setHidden()
+            self._ui.downloadViewControlBar.openFileButton.setDownloading()
+            self._ui.downloadViewControlBar.openLogsButton.setCreating()
+        elif self.downloadHistory.result in (self.downloadHistory.Result.completed, self.downloadHistory.Result.stopped):
+            # Success / manually stopped — file exists, retry available
             self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+            self._ui.downloadViewControlBar.retryButton.setVisible()
             self._ui.downloadViewControlBar.openFileButton.setVisible()
             self._ui.downloadViewControlBar.openLogsButton.setVisible()
         else:
+            # Aborted / canceled / error — retry is the primary action
             self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
-            if self.downloadHistory.result == self.downloadHistory.Result.downloading:
-                self._ui.downloadViewControlBar.openFileButton.setDownloading()
-                self._ui.downloadViewControlBar.openLogsButton.setCreating()
-            else:
-                self._ui.historyInfoArea.setStyleSheet("QLabel {color: #ff0000;}")
-                self._ui.downloadViewControlBar.openFileButton.setFileNotFound()
-                self._ui.downloadViewControlBar.openLogsButton.setVisible()
+            self._ui.historyInfoArea.setStyleSheet("QLabel {color: #ff0000;}")
+            self._ui.downloadViewControlBar.retryButton.setVisible()
+            self._ui.downloadViewControlBar.openFileButton.setFileNotFound()
+            self._ui.downloadViewControlBar.openLogsButton.setVisible()
 
     def _updateDurationInfo(self) -> None:
         if self.downloadInfo.type.isStream():

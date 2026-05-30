@@ -1,6 +1,11 @@
 from Core.Ui import *
+from Core.Config import Config
 from Download.Downloader.Core.Engine.Config import Config as DownloadEngineConfig
 from Ui.Components.Widgets.FileNameTemplateInfo import FileNameTemplateInfo
+from Services.Utils.OSUtils import OSUtils
+
+import json
+import shutil
 
 
 class Settings(QtWidgets.QWidget):
@@ -73,6 +78,38 @@ class Settings(QtWidgets.QWidget):
         self.setDownloadSpeed(App.FileDownloadManager.getPoolSize())
         self._ui.resetButton.clicked.connect(self.resetSettings)
         self.reloadBookmarkArea()
+
+        # ── Backup & Restore group (inserted programmatically before resetArea) ─
+        self._backupGroup = QtWidgets.QGroupBox(T("#Backup & Restore"), parent=self)
+        backupLayout = QtWidgets.QVBoxLayout(self._backupGroup)
+
+        exportBtn = QtWidgets.QToolButton(parent=self._backupGroup)
+        exportBtn.setText(T("#Export Settings…"))
+        exportBtn.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        exportBtn.setMinimumHeight(30)
+        exportBtn.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        exportBtn.clicked.connect(self.exportSettings)
+        backupLayout.addWidget(exportBtn)
+
+        importBtn = QtWidgets.QToolButton(parent=self._backupGroup)
+        importBtn.setText(T("#Import Settings…"))
+        importBtn.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        importBtn.setMinimumHeight(30)
+        importBtn.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        importBtn.clicked.connect(self.importSettings)
+        backupLayout.addWidget(importBtn)
+
+        # Insert right before resetArea so it sits in the same tab
+        parentLayout = self._ui.resetArea.parent().layout()
+        idx = parentLayout.indexOf(self._ui.resetArea)
+        parentLayout.insertWidget(idx, self._backupGroup)
+        # ───────────────────────────────────────────────────────────────────────
         App.GlobalDownloadManager.runningCountChangedSignal.connect(self.reload)
         self.reload()
         App.ThemeManager.themeUpdated.connect(self._setupThemeStyle)
@@ -86,11 +123,13 @@ class Settings(QtWidgets.QWidget):
             self._ui.languageArea.setEnabled(False)
             self._ui.timezoneArea.setEnabled(False)
             self._ui.resetArea.setEnabled(False)
+            self._backupGroup.setEnabled(False)
             self._ui.restrictedLabel.show()
         else:
             self._ui.languageArea.setEnabled(True)
             self._ui.timezoneArea.setEnabled(True)
             self._ui.resetArea.setEnabled(True)
+            self._backupGroup.setEnabled(True)
             self._ui.restrictedLabel.hide()
 
     def windowCloseChanged(self, index: int) -> None:
@@ -159,6 +198,72 @@ class Settings(QtWidgets.QWidget):
         if Utils.ask("warning", "#This will reset all settings.\nProceed?", parent=self):
             App.Preferences.reset()
             self.requestRestart()
+
+    def exportSettings(self) -> None:
+        """Copy the current settings.json to a user-chosen file."""
+        # Flush any unsaved in-memory state before copying
+        App.Preferences.save()
+        defaultName = f"TwitchLink_settings_{QtCore.QDate.currentDate().toString('yyyy-MM-dd')}.json"
+        filePath, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            T("#Export Settings"),
+            OSUtils.joinPath(OSUtils.getSystemHomeRoot(), defaultName),
+            "JSON (*.json)",
+        )
+        if not filePath:
+            return
+        try:
+            shutil.copy2(Config.APPDATA_FILE, filePath)
+            Utils.info("export-ok", "#Settings exported successfully.", parent=self)
+        except Exception as e:
+            Utils.info("export-error", f"#Export failed:\n{e}", parent=self)
+
+    def importSettings(self) -> None:
+        """Load settings from a user-chosen JSON file and apply them live."""
+        filePath, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            T("#Import Settings"),
+            OSUtils.getSystemHomeRoot(),
+            "JSON (*.json)",
+        )
+        if not filePath:
+            return
+
+        # Validate: must be readable JSON with at least one known top-level key
+        try:
+            with open(filePath, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            knownKeys = {"setup", "general", "templates", "advanced", "localization",
+                         "download", "scheduledDownloads", "favorites"}
+            if not knownKeys.intersection(raw.keys()):
+                Utils.info(
+                    "import-error",
+                    "#This does not appear to be a valid TwitchLink settings file.",
+                    parent=self,
+                )
+                return
+        except Exception:
+            Utils.info("import-error", "#Could not read the selected file.", parent=self)
+            return
+
+        if not Utils.ask(
+            "warning",
+            "#Current settings will be replaced with those from the selected file.\nProceed?",
+            parent=self,
+        ):
+            return
+
+        try:
+            shutil.copy2(filePath, Config.APPDATA_FILE)
+            App.Preferences.load()
+            Utils.info(
+                "import-ok",
+                "#Settings imported successfully.\nSome changes may require a restart.",
+                parent=self,
+            )
+            self.requestRestart()
+        except Exception as e:
+            Utils.info("import-error", f"#Import failed:\n{e}", parent=self)
 
     def requestRestart(self) -> None:
         self.restartRequired.emit()
