@@ -248,6 +248,7 @@ class Favorites(Serializable):
     def __init__(self):
         self._channels: list = []
         self._sort: str = "status_viewers"
+        self._notif_prefs: dict = {}   # {login: bool} — preferencia 🔔 por canal
 
     def set_channels(self, channels: list) -> None:
         self._channels = channels
@@ -260,6 +261,14 @@ class Favorites(Serializable):
 
     def get_sort(self) -> str:
         return self._sort
+
+    def get_notif_pref(self, login: str) -> bool:
+        """Devuelve True (activo) si no hay preferencia guardada para este canal."""
+        return self._notif_prefs.get(login, True)
+
+    def set_notif_pref(self, login: str, on: bool) -> None:
+        """Guarda la preferencia de notificación para un canal."""
+        self._notif_prefs[login] = on
 
     def apply_to_manager(self) -> None:
         """Inicializa FavoritesManager con datos cargados. Llamar DESPUES del decode."""

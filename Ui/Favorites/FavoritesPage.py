@@ -165,7 +165,8 @@ class ChannelCard(QtWidgets.QWidget):
         super().__init__(parent=parent)
         self._login    = ch.login
         self._last_url = ""
-        self._notif_on = True
+        from Core import App
+        self._notif_on = App.Preferences.favorites.get_notif_pref(ch.login)
         # Pre-inicializar para que eventFilter no crashee durante _build
         self._tc        = None
         self._ref_btn   = None
@@ -357,7 +358,7 @@ class ChannelCard(QtWidgets.QWidget):
         self._notif_btn.setToolTip("Activar/desactivar notificaciones")
         self._notif_btn.installEventFilter(self)
         self._notif_btn.clicked.connect(self._toggle_notif)
-        self._set_notif_style(True)
+        self._set_notif_style(self._notif_on)
         ac.addWidget(self._notif_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         # Botón eliminar
@@ -395,7 +396,10 @@ class ChannelCard(QtWidgets.QWidget):
             )
 
     def _toggle_notif(self):
-        self._set_notif_style(not self._notif_on)
+        new_state = not self._notif_on
+        self._set_notif_style(new_state)
+        from Core import App
+        App.Preferences.favorites.set_notif_pref(self._login, new_state)
 
     # ── Hover ──────────────────────────────────────────────────────────────────
     def enterEvent(self, ev):
