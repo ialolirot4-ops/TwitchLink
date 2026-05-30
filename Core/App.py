@@ -73,8 +73,8 @@ FileDownloadManager = _FileDownloadManager(parent=Instance)
 from Download.DownloadManager import DownloadManager as _DownloadManager
 DownloadManager = _DownloadManager(parent=Instance)
 
-from Download.ScheduledDownloadPubSubManager import ScheduledDownloadPubSubManager as _ScheduledDownloadPubSubManager
-ScheduledDownloadPubSubManager = _ScheduledDownloadPubSubManager(logger=Instance.logger, parent=Instance)
+from Download.ScheduledDownloadEventSubManager import ScheduledDownloadEventSubManager as _ScheduledDownloadEventSubManager
+ScheduledDownloadEventSubManager = _ScheduledDownloadEventSubManager(logger=Instance.logger, parent=Instance)
 
 from Download.ScheduledDownloadManager import ScheduledDownloadManager as _ScheduledDownloadManager
 ScheduledDownloadManager = _ScheduledDownloadManager(parent=Instance)

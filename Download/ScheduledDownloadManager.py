@@ -5,15 +5,15 @@ from Services.Twitch.GQL import TwitchGQLAPI
 from Services.Twitch.GQL import TwitchGQLModels
 from Services.Twitch.Playback import TwitchPlaybackGenerator
 from Services.Twitch.Playback import TwitchPlaybackModels
-from Services.Twitch.PubSub.TwitchPubSub import PubSubEvent
-from Services.Twitch.PubSub.TwitchPubSubEvents import EventTypes
+from Services.Twitch.EventSub.TwitchEventSub import EventSubEvent
+from Services.Twitch.EventSub.TwitchEventSubEvents import SubscriptionTypes
 from Services.FileNameLocker import FileNameLocker
 from Download.DownloadInfo import DownloadInfo
 from Download.Downloader.TwitchDownloader import TwitchDownloader
 from Download.Downloader.Core.StreamDownloader import StreamDownloader
 from Download.Downloader.Core.Engine.Config import Config
 from Download.ScheduledDownloadPreset import ScheduledDownloadPreset
-from Download.ScheduledDownloadPubSubManager import ScheduledDownloadPubSubSubscriber
+from Download.ScheduledDownloadEventSubManager import ScheduledDownloadEventSubSubscriber
 from Ui.Components.Utils.FileNameGenerator import FileNameGenerator
 
 from PyQt6 import QtCore
@@ -87,7 +87,7 @@ class ScheduledDownload(QtCore.QObject):
     channelDataUpdateStarted = QtCore.pyqtSignal()
     channelDataUpdateFinished = QtCore.pyqtSignal()
     channelDataUpdated = QtCore.pyqtSignal()
-    pubSubStateChanged = QtCore.pyqtSignal()
+    eventSubStateChanged = QtCore.pyqtSignal()
     downloaderCreated = QtCore.pyqtSignal(object, object)
     downloaderDestroyed = QtCore.pyqtSignal(object, object)
 
@@ -100,7 +100,7 @@ class ScheduledDownload(QtCore.QObject):
         self.uuid = uuid.uuid4()
         self.preset = scheduledDownloadPreset
         self.channel = None
-        self._pubSubSubscriber: ScheduledDownloadPubSubSubscriber | None = None
+        self._eventSubSubscriber: ScheduledDownloadEventSubSubscriber | None = None
         self._updatingChannelData = False
         self._autoUpdateTimer = QtCore.QTimer(parent=self)
         self._autoUpdateTimer.setInterval(Config.CHANNEL_AUTO_UPDATE_INTERVAL)
@@ -139,10 +139,10 @@ class ScheduledDownload(QtCore.QObject):
     def _syncEnabledState(self) -> None:
         if self.isChannelRetrieved():
             if self.isActive():
-                self.connectPubSub()
+                self.connectEventSub()
                 self.startDownloadIfOnline()
             else:
-                self.disconnectPubSub()
+                self.disconnectEventSub()
                 if self.status.isDownloading():
                     self.downloader.cancel()
                 elif self.status.isError() or self.status.isDownloaderError():
@@ -152,27 +152,27 @@ class ScheduledDownload(QtCore.QObject):
     def isChannelRetrieved(self) -> bool:
         return self.channel != None
 
-    def isPubSubConnected(self) -> bool:
-        return self._pubSubSubscriber != None
+    def isEventSubConnected(self) -> bool:
+        return self._eventSubSubscriber != None
 
     def isSubscribed(self) -> bool:
-        return self.isPubSubConnected() and self._pubSubSubscriber.isSubscribed()
+        return self.isEventSubConnected() and self._eventSubSubscriber.isSubscribed()
 
     def isConnecting(self) -> bool:
-        return self.isPubSubConnected() and self._pubSubSubscriber.hasPendingRequest()
+        return self.isEventSubConnected() and self._eventSubSubscriber.hasPendingRequest()
 
-    def connectPubSub(self) -> None:
-        if not self.isPubSubConnected():
-            self._pubSubSubscriber = App.ScheduledDownloadPubSubManager.subscribe(self.channel.id, key=self.getId())
-            self._pubSubSubscriber.stateChanged.connect(self.pubSubStateChanged)
-            self._pubSubSubscriber.eventReceived.connect(self.pubSubEventHandler)
-            self.pubSubStateChanged.emit()
+    def connectEventSub(self) -> None:
+        if not self.isEventSubConnected():
+            self._eventSubSubscriber = App.ScheduledDownloadEventSubManager.subscribe(self.channel.id, key=self.getId())
+            self._eventSubSubscriber.stateChanged.connect(self.eventSubStateChanged)
+            self._eventSubSubscriber.eventReceived.connect(self.eventSubEventHandler)
+            self.eventSubStateChanged.emit()
 
-    def disconnectPubSub(self) -> None:
-        if self.isPubSubConnected():
-            App.ScheduledDownloadPubSubManager.unsubscribe(self.channel.id, key=self.getId())
-            self._pubSubSubscriber = None
-            self.pubSubStateChanged.emit()
+    def disconnectEventSub(self) -> None:
+        if self.isEventSubConnected():
+            App.ScheduledDownloadEventSubManager.unsubscribe(self.channel.id, key=self.getId())
+            self._eventSubSubscriber = None
+            self.eventSubStateChanged.emit()
 
     def _syncAutoUpdate(self) -> None:
         if self.isActive() and self.isChannelRetrieved() and self.isOffline():
@@ -235,37 +235,40 @@ class ScheduledDownload(QtCore.QObject):
     def isOffline(self) -> bool:
         return not self.isOnline()
 
-    def pubSubEventHandler(self, event: PubSubEvent) -> None:
-        topic, data = event.topic, event.data
-        if topic.eventType == EventTypes.VideoPlaybackById:
-            if data["type"] == "stream-up":
-                self.setOnline()
-                self.channel.stream.createdAt = QtCore.QDateTime.fromSecsSinceEpoch(data["server_time"], QtCore.Qt.TimeSpec.UTC)
-            elif data["type"] == "stream-down":
-                self.setOffline()
-                self.channel.lastBroadcast.startedAt = QtCore.QDateTime.fromSecsSinceEpoch(data["server_time"], QtCore.Qt.TimeSpec.UTC)
-            elif data["type"] == "viewcount":
-                if self.isOnline() and self.channel.stream.id != None:
-                    self.channel.stream.viewersCount = data["viewers"]
-                else:
-                    self.updateChannelData()
-            elif data["type"] == "commercial":
-                pass
-        elif topic.eventType == EventTypes.BroadcastSettingsUpdate:
-            self.channel.lastBroadcast.title = data["status"]
-            if data["game_id"] == 0:
+    def eventSubEventHandler(self, event: EventSubEvent) -> None:
+        sub_type = event.subscription_type
+        data     = event.data
+
+        if sub_type == SubscriptionTypes.StreamOnline:
+            self.setOnline()
+            # "started_at" es ISO 8601, ej: "2024-01-01T00:00:00Z"
+            started_at = QtCore.QDateTime.fromString(
+                data.get("started_at", ""),
+                QtCore.Qt.DateFormat.ISODate
+            )
+            if started_at.isValid() and self.isOnline():
+                self.channel.stream.createdAt = started_at.toUTC()
+
+        elif sub_type == SubscriptionTypes.StreamOffline:
+            self.setOffline()
+
+        elif sub_type == SubscriptionTypes.ChannelUpdate:
+            self.channel.lastBroadcast.title = data.get("title", "")
+            category_id = data.get("category_id", "")
+            if not category_id:
                 gameData = {}
             else:
                 gameData = {
-                    "id": data["game_id"],
-                    "name": data["game"],
-                    "boxArtURL": self.GAME_BOX_ART_URL_FORMAT.format(id=data["game_id"]),
-                    "displayName": data["game"]
+                    "id":          category_id,
+                    "name":        data.get("category_name", ""),
+                    "boxArtURL":   self.GAME_BOX_ART_URL_FORMAT.format(id=category_id),
+                    "displayName": data.get("category_name", ""),
                 }
             self.channel.lastBroadcast.game = TwitchGQLModels.Game(gameData)
             if self.isOnline():
                 self.channel.stream.title = self.channel.lastBroadcast.title
-                self.channel.stream.game = self.channel.lastBroadcast.game
+                self.channel.stream.game  = self.channel.lastBroadcast.game
+
         self.channelDataUpdated.emit()
         self.startDownloadIfOnline()
 
@@ -336,8 +339,8 @@ class ScheduledDownload(QtCore.QObject):
 
     def __del__(self):
         try:
-            if self.isPubSubConnected():
-                App.ScheduledDownloadPubSubManager.unsubscribe(self.channel.id, key=self.getId())
+            if self.isEventSubConnected():
+                App.ScheduledDownloadEventSubManager.unsubscribe(self.channel.id, key=self.getId())
         except:
             pass
 
@@ -379,20 +382,20 @@ class ScheduledDownloadManager(QtCore.QObject):
 
     def _syncState(self) -> None:
         self._syncScheduledDownloadsBlockedState()
-        self._updatePubSubState()
+        self._updateEventSubState()
 
     def _syncScheduledDownloadsBlockedState(self) -> None:
         blocked = not self.isEnabled() or self.isBlocked()
         for scheduledDownload in self.scheduledDownloads.values():
             scheduledDownload.setBlocked(blocked)
 
-    def _updatePubSubState(self) -> None:
+    def _updateEventSubState(self) -> None:
         if not self.isBlocked() and self.isEnabled() and any(scheduledDownload.isEnabled() for scheduledDownload in self.scheduledDownloads.values()):
-            if not App.ScheduledDownloadPubSubManager.isOpened():
-                App.ScheduledDownloadPubSubManager.open()
+            if not App.ScheduledDownloadEventSubManager.isOpened():
+                App.ScheduledDownloadEventSubManager.open()
         else:
-            if App.ScheduledDownloadPubSubManager.isOpened():
-                App.ScheduledDownloadPubSubManager.close()
+            if App.ScheduledDownloadEventSubManager.isOpened():
+                App.ScheduledDownloadEventSubManager.close()
 
     def setPresets(self, presetList: list[ScheduledDownloadPreset]) -> None:
         for scheduledDownload in self.getScheduledDownloads():
@@ -405,7 +408,7 @@ class ScheduledDownloadManager(QtCore.QObject):
 
     def create(self, scheduledDownloadPreset: ScheduledDownloadPreset) -> uuid.UUID:
         scheduledDownload = ScheduledDownload(scheduledDownloadPreset, parent=self)
-        scheduledDownload.activeChanged.connect(self._updatePubSubState)
+        scheduledDownload.activeChanged.connect(self._updateEventSubState)
         scheduledDownload.downloaderCreated.connect(self.downloaderCreated)
         scheduledDownload.downloaderDestroyed.connect(self.downloaderDestroyed)
         scheduledDownloadId = scheduledDownload.getId()

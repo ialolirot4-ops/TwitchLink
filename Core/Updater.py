@@ -274,7 +274,7 @@ class Updater(QtCore.QObject):
             from Services.Twitch.Authentication.Integrity.IntegrityConfig import Config as IntegrityConfig
             from Services.Twitch.GQL.TwitchGQLConfig import Config as GQLConfig
             from Services.Twitch.Playback.TwitchPlaybackConfig import Config as PlaybackConfig
-            from Services.Twitch.PubSub.TwitchPubSubConfig import Config as PubSubConfig
+            from Services.Twitch.EventSub.TwitchEventSubConfig import Config as EventSubConfig
             from Search.Config import Config as SearchConfig
             from Search.Helper.Config import Config as SearchHelperConfig
             from Download.Downloader.Core.Engine.Config import Config as DownloadConfig
@@ -290,7 +290,7 @@ class Updater(QtCore.QObject):
                 "INTEGRITY": IntegrityConfig,
                 "GQL": GQLConfig,
                 "PLAYBACK": PlaybackConfig,
-                "PUBSUB": PubSubConfig,
+                "EVENTSUB": EventSubConfig,
                 "SEARCH": SearchConfig,
                 "SEARCH_HELPER": SearchHelperConfig,
                 "DOWNLOAD": DownloadConfig,

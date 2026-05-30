@@ -40,7 +40,7 @@ class ScheduledDownloadPreview(QtWidgets.QWidget):
         self.scheduledDownload.channelDataUpdateStarted.connect(self._channelDataUpdateStarted)
         self.scheduledDownload.channelDataUpdateFinished.connect(self._channelDataUpdateFinished)
         self.scheduledDownload.channelDataUpdated.connect(self._showChannel)
-        self.scheduledDownload.pubSubStateChanged.connect(self._showPubSubState)
+        self.scheduledDownload.eventSubStateChanged.connect(self._showEventSubState)
         self.scheduledDownload.status.updated.connect(self._statusUpdated)
         self._statusUpdated()
         if self.scheduledDownload.isUpdatingChannelData():
@@ -48,7 +48,7 @@ class ScheduledDownloadPreview(QtWidgets.QWidget):
         else:
             self._channelDataUpdateFinished()
         self._showChannel()
-        self._showPubSubState()
+        self._showEventSubState()
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         self.resizedSignal.emit()
@@ -144,7 +144,7 @@ class ScheduledDownloadPreview(QtWidgets.QWidget):
             self._ui.downloadViewControlBar.showDownloadInfo(downloadInfo)
             self._ui.downloaderView.updateContentInfo(downloadInfo, immediateRefresh=False)
 
-    def _showPubSubState(self) -> None:
+    def _showEventSubState(self) -> None:
         if not self.scheduledDownload.isActive():
             self._showNetworkStatus(T("deactivated"))
         elif self.scheduledDownload.isSubscribed():
