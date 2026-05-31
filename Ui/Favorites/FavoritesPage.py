@@ -273,7 +273,7 @@ class ChannelCard(QtWidgets.QWidget):
         self._notif_btn     = None
         self._del_btn       = None
         self._bell_viewer: ThemedIconViewer | None = None
-        self.setFixedHeight(self.TH + 24)
+        self.setFixedHeight(self.TH + 48)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self._build()
         self.update_state(ch)
@@ -417,7 +417,36 @@ class ChannelCard(QtWidgets.QWidget):
 
         self._sub_info = QtWidgets.QLabel()
         self._sub_info.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
+        _sp_sub = self._sub_info.sizePolicy()
+        _sp_sub.setRetainSizeWhenHidden(False)
+        self._sub_info.setSizePolicy(_sp_sub)
         info.addWidget(self._sub_info)
+
+        # Game row: box art icon + name (live channels only)
+        self._game_row = QtWidgets.QWidget()
+        self._game_row.setFixedHeight(55)
+        self._game_row.setStyleSheet("background:transparent;")
+        _gr_lay = QtWidgets.QHBoxLayout(self._game_row)
+        _gr_lay.setContentsMargins(0, 0, 0, 0)
+        _gr_lay.setSpacing(8)
+        self._game_icon = QtWidgets.QLabel()
+        self._game_icon.setFixedSize(40, 53)
+        self._game_icon.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._game_icon.setStyleSheet(
+            "border-radius:4px;background:rgba(128,128,128,0.2);"
+        )
+        _gr_lay.addWidget(self._game_icon, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self._game_name_lbl = QtWidgets.QLabel()
+        self._game_name_lbl.setStyleSheet(
+            f"font-size:11px;color:{_P['dim']};font-weight:500;"
+        )
+        self._game_name_lbl.setWordWrap(True)
+        _gr_lay.addWidget(self._game_name_lbl, 1, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        _sp_gr = self._game_row.sizePolicy()
+        _sp_gr.setRetainSizeWhenHidden(False)
+        self._game_row.setSizePolicy(_sp_gr)
+        self._game_row.hide()
+        info.addWidget(self._game_row)
 
         self._partner_pill = QtWidgets.QLabel()
         self._partner_pill.setFixedHeight(18)
@@ -566,15 +595,17 @@ class ChannelCard(QtWidgets.QWidget):
 
             game = ch.game_name
             if game:
-                self._sub_info.setText(f"🎮  {game}")
+                self._game_name_lbl.setText(game)
                 if ch.box_art_url:
-                    art = ch.box_art_url.replace("{width}", "40").replace("{height}", "53")
-                    self._sub_info.setToolTip(
-                        f"<img src='{art}' width=40 height=53><br>{game}"
-                    )
+                    art = ch.box_art_url.replace("{width}", "80").replace("{height}", "106")
+                    _load(self._game_icon, art, 40, 53)
+                else:
+                    self._game_icon.setPixmap(QtGui.QPixmap())
+                self._game_row.show()
+                self._sub_info.hide()
             else:
-                self._sub_info.setText("")
-            self._sub_info.show()
+                self._game_row.hide()
+                self._sub_info.hide()
             self._partner_pill.hide()
 
             start = (
@@ -609,6 +640,7 @@ class ChannelCard(QtWidgets.QWidget):
             self._title.setText(desc)
             self._title.setStyleSheet(f"font-size:12px;color:{_P['dim']};")
 
+            self._game_row.hide()
             parts = [ch.followers_str, ch.last_broadcast_str]
             self._sub_info.setText("  ·  ".join(p for p in parts if p))
             self._sub_info.setToolTip("")
