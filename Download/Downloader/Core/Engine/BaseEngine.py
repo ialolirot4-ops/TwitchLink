@@ -50,6 +50,14 @@ class BaseEngine(QtCore.QObject):
         self.logger.exception(exception)
         self._raiseException(exception)
 
+    def pause(self) -> None:
+        """Subclasses override to suspend activity without aborting."""
+        pass
+
+    def resume(self) -> None:
+        """Subclasses override to continue after a pause."""
+        pass
+
     def _raiseException(self, exception: Exception) -> None:
         self.logger.warning("The following exception occurred.")
         self.logger.exception(exception)

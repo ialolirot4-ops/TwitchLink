@@ -85,6 +85,8 @@ class Icons:
     TOGGLE_OFF = I("toggle_off.svg")
     TOGGLE_ON = I("toggle_on.svg")
     TRASH = I("trash.svg")
+    BELL = I("bell.svg")
+    BELL_OFF = I("bell_off.svg")
     UPDATE_FOUND = I("update_found.svg")
     VERIFIED = I("verified.svg")
     VIEWER = I("viewer.svg")

@@ -16,6 +16,8 @@ class BaseDownloader(QtCore.QThread):
     started = QtCore.pyqtSignal(object)
     finished = QtCore.pyqtSignal(object)
     _abortRequested = QtCore.pyqtSignal(Exception)
+    _pauseRequested = QtCore.pyqtSignal()
+    _resumeRequested = QtCore.pyqtSignal()
 
     def __init__(self, downloadInfo: DownloadInfo, parent: QtCore.QObject | None = None):
         super().__init__(parent=parent)
@@ -51,6 +53,8 @@ class BaseDownloader(QtCore.QThread):
             parent=None
         )
         self._abortRequested.connect(engine.abort)
+        self._pauseRequested.connect(engine.pause)
+        self._resumeRequested.connect(engine.resume)
         return engine
 
     def run(self) -> None:
@@ -69,3 +73,19 @@ class BaseDownloader(QtCore.QThread):
             self.status.terminateState.setPreparing()
             self.status.sync()
             self._abortRequested.emit(exception)
+
+    def pause(self) -> None:
+        """Request pause. pauseState transitions: False → Processing → True."""
+        if (self.status.pauseState.isFalse()
+                and self.status.isDownloading()
+                and self.status.terminateState.isFalse()):
+            self.status.pauseState.setProcessing()
+            self.status.sync()
+            self._pauseRequested.emit()
+
+    def resume(self) -> None:
+        """Resume from a paused state. Engine sets pauseState back to False."""
+        if (not self.status.pauseState.isFalse()
+                and self.status.isDownloading()
+                and self.status.terminateState.isFalse()):
+            self._resumeRequested.emit()

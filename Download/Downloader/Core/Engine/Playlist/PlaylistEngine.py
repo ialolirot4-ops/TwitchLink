@@ -143,10 +143,38 @@ class PlaylistEngine(BaseEngine):
             nextSegmentDownloader.setParent(None)
         self._checkDone()
 
+    def pause(self) -> None:
+        """Stop polling for new segments. Wait for in-flight ones to finish."""
+        self.logger.info("Pause requested.")
+        self._refreshTimer.stop()
+        if self._playlistManager.isRunning():
+            self._playlistManager.abort()
+        # If nothing is in-flight, mark as fully paused immediately
+        if len(self._segmentDownloaders) == 0:
+            self.status.pauseState.setTrue()
+            self._syncStatus()
+        # Otherwise _checkDone() will mark fully paused when all segments finish
+
+    def resume(self) -> None:
+        """Resume polling for new segments."""
+        self.logger.info("Resuming download.")
+        self.status.pauseState.setFalse()
+        self._syncStatus()
+        self._updatePlaylist()
+
     def _checkDone(self) -> None:
         if len(self._segmentDownloaders) == 0 and not self.status.isDone():
-            if self.status.terminateState.isProcessing() or self._playlistManager.playlist.isEndList() or (self.downloadInfo.type.isVideo() and not self.downloadInfo.isUpdateTrackEnabled()):
-                if self._FFmpeg == None:
+            shouldFinish = (
+                self.status.terminateState.isProcessing()
+                or self._playlistManager.playlist.isEndList()
+                or (self.downloadInfo.type.isVideo() and not self.downloadInfo.isUpdateTrackEnabled())
+            )
+            if self.status.pauseState.isProcessing() and not shouldFinish:
+                # All in-flight segments drained → fully paused
+                self.status.pauseState.setTrue()
+                self._syncStatus()
+            elif shouldFinish:
+                if self._FFmpeg is None:
                     self._finish()
                 elif self.status.terminateState.isProcessing():
                     self._FFmpeg.terminate()

@@ -35,7 +35,8 @@ class FileDownloader(QtCore.QObject):
         self._retryScheduled: bool = False
         self._retryCount = 0
         self._finished = False
-        self._throttleConnected: bool = False   # True while waiting for refilled signal
+        self._throttleConnected: bool = False
+        self._paused: bool = False   # True while waiting for refilled signal
         self._retryTimer = QtCore.QTimer(parent=self)
         self._retryTimer.setSingleShot(True)
         self._retryTimer.timeout.connect(self._retryTimerTimeout)
@@ -74,21 +75,31 @@ class FileDownloader(QtCore.QObject):
         self.bytesTotal = bytesTotal
         self.progressChanged.emit(self.bytesReceived, self.bytesTotal)
 
+    def pause(self) -> None:
+        """Soft-pause: stop consuming bytes from Qt's network buffer.
+        TCP back-pressure will naturally slow the sender."""
+        self._paused = True
+
+    def resume(self) -> None:
+        """Resume consuming buffered data and re-enable readyRead processing."""
+        self._paused = False
+        if self._reply is not None and self._reply.bytesAvailable() > 0:
+            self._onReadyRead()
+
     def _onReadyRead(self) -> None:
+        if self._paused:
+            return  # Leave data in Qt's buffer; TCP window will throttle sender
         if self._reply.attribute(QtNetwork.QNetworkRequest.Attribute.HttpStatusCodeAttribute) == 200:
             available = self._reply.bytesAvailable()
             if available <= 0:
                 return
-
             limiter = FileDownloader._bandwidthLimiter
             allowed = limiter.acquire(available) if limiter else available
-
             if allowed > 0:
                 data = self._reply.read(allowed)
                 if self.file.write(data) == -1:
                     self._raiseException(Exceptions.FileSystemError(self.file))
             elif not self._throttleConnected and limiter:
-                # No tokens right now — wait for the next refill tick
                 limiter.refilled.connect(self._onThrottleRefill)
                 self._throttleConnected = True
 

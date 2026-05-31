@@ -51,6 +51,20 @@ class FileEngine(BaseEngine):
         else:
             super()._finish()
 
+    def pause(self) -> None:
+        """Pause the active file download without aborting it."""
+        if self._fileDownloader is not None:
+            self._fileDownloader.pause()
+        self.status.pauseState.setTrue()
+        self._syncStatus()
+
+    def resume(self) -> None:
+        """Resume a paused file download."""
+        self.status.pauseState.setFalse()
+        self._syncStatus()
+        if self._fileDownloader is not None:
+            self._fileDownloader.resume()
+
     def _injectMetadata(self) -> None:
         """Start a quick FFmpeg copy pass to embed Twitch metadata into the file."""
         metadata = MetadataBuilder.build(self.downloadInfo)

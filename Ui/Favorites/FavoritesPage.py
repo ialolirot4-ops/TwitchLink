@@ -1,42 +1,73 @@
 """
 Ui/Favorites/FavoritesPage.py
-Diseño inspirado en la imagen de referencia + mejoras propias.
+
+Paleta unificada con la app via App.Instance.palette().
+Botones nativos via Icons + setIconViewer.
 """
 from __future__ import annotations
 from Services.Favorites.FavoritesManager import (
     FavoritesManager, FavoriteChannel, SortCriteria,
 )
+from Services.Image.Presets import Icons
+from Services.Theme.ThemedIconViewer import ThemedIconViewer
 from PyQt6 import QtCore, QtGui, QtWidgets, QtNetwork
 import time as _time
 
-# ─── Paleta ───────────────────────────────────────────────────────────────────
-_P = {
-    "bg":       "#1f1f23",
-    "card":     "#26262c",
-    "card_h":   "#2e2e36",
-    "sep":      "#35353d",
-    "purple":   "#9147ff",
-    "purple_d": "#7b3fe4",
-    "purple_bg":"rgba(145,71,255,0.15)",
-    "red":      "#e91916",
-    "text":     "#efeff1",
-    "dim":      "#adadb8",
-    "mute":     "#727278",
-    "badge_live":"#9147ff",
-    "badge_off": "#3d3d48",
-    "partner":   "#9147ff",
-    "affiliate": "#454560",
-    "staff":     "#c0392b",
-}
+# ─── Paleta dinámica ──────────────────────────────────────────────────────────
+_P: dict = {}
+
+def _build_palette() -> None:
+    from Core import App
+    pal = App.Instance.palette()
+    R   = QtGui.QPalette.ColorRole
+    G   = QtGui.QPalette.ColorGroup
+
+    def h(role: R, group: G = G.Active) -> str:
+        return pal.color(group, role).name()
+
+    def rgba(role: R, alpha: float, group: G = G.Active) -> str:
+        c = pal.color(group, role)
+        return f"rgba({c.red()},{c.green()},{c.blue()},{alpha})"
+
+    win  = pal.color(G.Active, R.Window)
+    base = pal.color(G.Active, R.Base)
+    text = pal.color(G.Active, R.WindowText)
+    mid  = pal.color(G.Active, R.Mid)
+
+    is_dark = win.lightness() < 128
+    d = 14 if is_dark else -10
+    card_h = QtGui.QColor(
+        max(0, min(255, base.red()   + d)),
+        max(0, min(255, base.green() + d)),
+        max(0, min(255, base.blue()  + d)),
+    ).name()
+    aff = "#454560" if is_dark else "#9898c8"
+
+    _P.update({
+        "bg":         win.name(),
+        "card":       base.name(),
+        "card_h":     card_h,
+        "sep":        mid.name(),
+        "purple":     "#9147ff",
+        "purple_d":   "#7b3fe4",
+        "purple_bg":  "rgba(145,71,255,0.15)",
+        "red":        "#e91916",
+        "text":       text.name(),
+        "dim":        rgba(R.WindowText, 0.65),
+        "mute":       rgba(R.WindowText, 0.38),
+        "badge_live": "#9147ff",
+        "badge_off":  mid.name(),
+        "partner":    "#9147ff",
+        "affiliate":  aff,
+        "staff":      "#c0392b",
+    })
 
 # ─── Caché de imágenes (LRU, máx 120 entradas) ───────────────────────────────
 from collections import OrderedDict
 _CACHE: OrderedDict[str, QtGui.QPixmap] = OrderedDict()
 _CACHE_MAX = 120
 
-
 def _cache_put(key: str, pm: QtGui.QPixmap) -> None:
-    """Inserta en el cache LRU y expulsa la entrada más antigua si se supera el límite."""
     if key in _CACHE:
         _CACHE.move_to_end(key)
     else:
@@ -46,13 +77,12 @@ def _cache_put(key: str, pm: QtGui.QPixmap) -> None:
         return
     _CACHE[key] = pm
 
-
 def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> None:
     if not url:
         return
     key = f"{url}|{w}x{h}|{'c' if circle else 'r'}"
     if key in _CACHE:
-        _CACHE.move_to_end(key)          # marcar como usado recientemente
+        _CACHE.move_to_end(key)
         label.setPixmap(_CACHE[key])
         return
     from Core import App
@@ -69,7 +99,6 @@ def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> No
                 label.setPixmap(pm)
         reply.deleteLater()
     reply.finished.connect(_done)
-
 
 def _scale(src: QtGui.QPixmap, w: int, h: int, circle: bool) -> QtGui.QPixmap:
     sc = src.scaled(w, h,
@@ -90,25 +119,23 @@ def _scale(src: QtGui.QPixmap, w: int, h: int, circle: bool) -> QtGui.QPixmap:
     p.end()
     return out
 
-
 def _avatar_ph(size: int) -> QtGui.QPixmap:
     pm = QtGui.QPixmap(size, size)
     pm.fill(QtCore.Qt.GlobalColor.transparent)
     p  = QtGui.QPainter(pm)
     p.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
-    p.setBrush(QtGui.QColor("#3d3d56"))
+    p.setBrush(QtGui.QColor(_P.get("sep", "#3d3d56")))
     p.setPen(QtCore.Qt.PenStyle.NoPen)
     p.drawEllipse(0, 0, size, size)
     p.end()
     return pm
 
-
 def _thumb_ph(w: int, h: int, offline=False) -> QtGui.QPixmap:
     pm = QtGui.QPixmap(w, h)
-    pm.fill(QtGui.QColor(_P["bg"]))
+    pm.fill(QtGui.QColor(_P.get("bg", "#1f1f23")))
     if offline:
         p = QtGui.QPainter(pm)
-        p.setPen(QtGui.QColor(_P["mute"]))
+        p.setPen(QtGui.QColor(_P.get("mute", "#727278")))
         f = p.font(); f.setPointSize(10); p.setFont(f)
         p.drawText(pm.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, "OFFLINE")
         p.end()
@@ -149,33 +176,42 @@ class _Uptime(QtWidgets.QLabel):
 
 # ─── Card ─────────────────────────────────────────────────────────────────────
 class ChannelCard(QtWidgets.QWidget):
-    """
-    Click → abre canal en la app (TwitchLink).
-    Clic derecho → menú contextual (App / Navegador / Quitar).
-    Botón 🔔 → toggle notificaciones del canal.
-    Botón 🗑 → quitar de favoritos.
-    """
     openInApp     = QtCore.pyqtSignal(str)
     openInBrowser = QtCore.pyqtSignal(str)
     removeFav     = QtCore.pyqtSignal(str)
 
-    TW, TH, AV = 210, 118, 46  # thumb width/height, avatar size
+    TW, TH, AV = 210, 118, 52
 
     def __init__(self, ch: FavoriteChannel, parent=None):
         super().__init__(parent=parent)
+        if not _P:
+            _build_palette()
         self._login    = ch.login
         self._last_url = ""
+        self._is_live  = False
         from Core import App
         self._notif_on = App.Preferences.favorites.get_notif_pref(ch.login)
-        # Pre-inicializar para que eventFilter no crashee durante _build
         self._tc        = None
         self._ref_btn   = None
         self._notif_btn = None
         self._del_btn   = None
-        self.setFixedHeight(self.TH + 22)  # thumb + padding
+        self._bell_viewer: ThemedIconViewer | None = None
+        self.setFixedHeight(self.TH + 24)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self._build()
         self.update_state(ch)
+
+    # ── Pintar borde izquierdo de estado ──────────────────────────────────────
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        p = QtGui.QPainter(self)
+        p.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        color = QtGui.QColor(_P["purple"] if self._is_live else _P["sep"])
+        p.setBrush(color)
+        p.setPen(QtCore.Qt.PenStyle.NoPen)
+        # Borde izquierdo de 3px con esquinas redondeadas
+        p.drawRoundedRect(0, 6, 3, self.height() - 12, 2, 2)
+        p.end()
 
     # ── Eventos ──────────────────────────────────────────────────────────────
     def mousePressEvent(self, ev):
@@ -194,7 +230,6 @@ class ChannelCard(QtWidgets.QWidget):
         menu.exec(ev.globalPos())
 
     def eventFilter(self, obj, ev):
-        # Thumbnail hover — mostrar/ocultar refresh button
         tc = getattr(self, "_tc", None)
         if tc and obj == tc:
             if ev.type() == QtCore.QEvent.Type.Enter:
@@ -203,18 +238,12 @@ class ChannelCard(QtWidgets.QWidget):
             elif ev.type() == QtCore.QEvent.Type.Leave:
                 ref = getattr(self, "_ref_btn", None)
                 if ref: ref.hide()
-        # Botones: absorber MouseButtonPress para no propagar al widget padre
-        notif = getattr(self, "_notif_btn", None)
-        del_  = getattr(self, "_del_btn",   None)
-        if notif and del_ and obj in (notif, del_):
-            if ev.type() == QtCore.QEvent.Type.MouseButtonPress:
-                return False
         return super().eventFilter(obj, ev)
 
     # ── Construcción ─────────────────────────────────────────────────────────
     def _build(self):
         root = QtWidgets.QHBoxLayout(self)
-        root.setContentsMargins(4, 9, 4, 9)
+        root.setContentsMargins(8, 9, 4, 9)
         root.setSpacing(0)
 
         # ── Thumbnail ─────────────────────────────────────────────────────
@@ -229,7 +258,6 @@ class ChannelCard(QtWidgets.QWidget):
         self._thumb.setPixmap(_thumb_ph(self.TW, self.TH))
         self._thumb.setStyleSheet("border-radius:4px;")
 
-        # Overlay offline
         self._overlay = QtWidgets.QLabel(tc)
         self._overlay.setFixedSize(self.TW, self.TH)
         self._overlay.setStyleSheet(
@@ -237,11 +265,17 @@ class ChannelCard(QtWidgets.QWidget):
         )
         self._overlay.hide()
 
-        # Uptime badge
-        self._uptime = _Uptime(tc)
-        self._uptime.move(4, self.TH - 20)
+        # Badge Live/Offline sobre la thumbnail (abajo izquierda)
+        self._thumb_badge = QtWidgets.QLabel(tc)
+        self._thumb_badge.setStyleSheet(
+            f"background:{_P['badge_live']};color:#fff;"
+            "font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;"
+        )
+        self._thumb_badge.hide()
 
-        # Refresh button (hover)
+        self._uptime = _Uptime(tc)
+
+        # Refresh button (aparece al hover)
         self._ref_btn = QtWidgets.QToolButton(tc)
         self._ref_btn.setText("↺")
         self._ref_btn.setFixedSize(20, 20)
@@ -255,8 +289,6 @@ class ChannelCard(QtWidgets.QWidget):
         self._ref_btn.hide()
         self._ref_btn.clicked.connect(self._force_refresh)
 
-        # Spacer left
-        root.addSpacing(12)
         root.addWidget(tc)
         root.addSpacing(12)
 
@@ -264,55 +296,51 @@ class ChannelCard(QtWidgets.QWidget):
         info_w = QtWidgets.QWidget()
         info_w.setStyleSheet("background:transparent;")
         info = QtWidgets.QVBoxLayout(info_w)
-        info.setContentsMargins(0, 0, 8, 0)
-        info.setSpacing(2)
+        info.setContentsMargins(0, 0, 4, 0)
+        info.setSpacing(3)
 
-        # Fila 1: badge estado + avatar + nombre + rol
+        # Fila 1: avatar + nombre + rol + viewers
         r1 = QtWidgets.QHBoxLayout()
         r1.setSpacing(8)
         r1.setContentsMargins(0, 0, 0, 0)
 
-        self._status_badge = QtWidgets.QLabel()
-        self._status_badge.setFixedSize(52, 20)
-        self._status_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        r1.addWidget(self._status_badge, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
-
         self._avatar = QtWidgets.QLabel()
         self._avatar.setFixedSize(self.AV, self.AV)
         self._avatar.setPixmap(_avatar_ph(self.AV))
+        self._avatar.setStyleSheet(
+            f"border-radius:{self.AV//2}px;"
+            f"border:2px solid {_P['sep']};"
+        )
         r1.addWidget(self._avatar, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         name_col = QtWidgets.QVBoxLayout()
-        name_col.setSpacing(0)
+        name_col.setSpacing(1)
         name_col.setContentsMargins(0, 0, 0, 0)
 
         name_row = QtWidgets.QHBoxLayout()
         name_row.setSpacing(5)
         self._name = QtWidgets.QLabel()
         self._name.setStyleSheet(
-            f"font-weight:700;font-size:15px;color:{_P['text']};"
+            f"font-weight:700;font-size:14px;color:{_P['text']};"
         )
         name_row.addWidget(self._name)
 
         self._role_badge = QtWidgets.QLabel()
-        self._role_badge.setFixedSize(18, 18)
+        self._role_badge.setFixedSize(16, 16)
         self._role_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._role_badge.hide()
         name_row.addWidget(self._role_badge)
         name_row.addStretch()
         name_col.addLayout(name_row)
 
-        # Viewers (solo live, inline con nombre)
         self._viewers = QtWidgets.QLabel()
-        self._viewers.setStyleSheet(
-            f"font-size:12px;color:{_P['dim']};"
-        )
+        self._viewers.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
         name_col.addWidget(self._viewers)
 
         r1.addLayout(name_col, 1)
         info.addLayout(r1)
 
-        # Fila 2: título del stream / descripción del canal
+        # Fila 2: título
         self._title = QtWidgets.QLabel()
         self._title.setStyleSheet(
             f"font-size:12px;color:{_P['text']};font-weight:500;"
@@ -321,103 +349,93 @@ class ChannelCard(QtWidgets.QWidget):
         self._title.setMaximumHeight(34)
         info.addWidget(self._title)
 
-        # Fila 3: juego (live) / seguidores (offline)
+        # Fila 3: juego / seguidores
         self._sub_info = QtWidgets.QLabel()
         self._sub_info.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
         info.addWidget(self._sub_info)
 
-        # Fila 4: partner badge (offline)
+        # Fila 4: partner pill (solo offline)
         self._partner_pill = QtWidgets.QLabel()
         self._partner_pill.setFixedHeight(18)
         self._partner_pill.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self._partner_pill.setStyleSheet(
-            f"background:{_P['partner']};color:{_P['text']};"
-            "border-radius:4px;font-size:8px;font-weight:700;padding:0 7px;"
-        )
         self._partner_pill.hide()
-        info.addWidget(
-            self._partner_pill, 0,
-            QtCore.Qt.AlignmentFlag.AlignLeft
-        )
+        info.addWidget(self._partner_pill, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
 
         info.addStretch()
         root.addWidget(info_w, 1)
 
-        # ── Acciones (derecha) ────────────────────────────────────────────
+        # ── Acciones — botones nativos ────────────────────────────────────
         act_w = QtWidgets.QWidget()
-        act_w.setFixedWidth(60)
+        act_w.setFixedWidth(44)
         act_w.setStyleSheet("background:transparent;")
         ac = QtWidgets.QVBoxLayout(act_w)
-        ac.setContentsMargins(0, 0, 10, 0)
-        ac.setSpacing(6)
+        ac.setContentsMargins(0, 0, 8, 0)
+        ac.setSpacing(4)
         ac.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter)
 
-        # Botón notificaciones
-        self._notif_btn = QtWidgets.QToolButton()
-        self._notif_btn.setFixedSize(32, 32)
+        # Botón notificaciones — QPushButton nativo con ThemedIconViewer
+        self._notif_btn = QtWidgets.QPushButton()
+        self._notif_btn.setFixedSize(28, 28)
+        self._notif_btn.setFlat(True)
         self._notif_btn.setToolTip("Activar/desactivar notificaciones")
-        self._notif_btn.installEventFilter(self)
+        self._notif_btn.setIconSize(QtCore.QSize(18, 18))
         self._notif_btn.clicked.connect(self._toggle_notif)
-        self._set_notif_style(self._notif_on)
+        self._bell_viewer = ThemedIconViewer(
+            self._notif_btn,
+            Icons.BELL if self._notif_on else Icons.BELL_OFF
+        )
+        self._update_notif_style()
         ac.addWidget(self._notif_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
 
-        # Botón eliminar
-        self._del_btn = QtWidgets.QToolButton()
-        self._del_btn.setFixedSize(32, 32)
-        self._del_btn.setText("🗑")
+        # Botón eliminar — QPushButton nativo con Icons.TRASH
+        self._del_btn = QtWidgets.QPushButton()
+        self._del_btn.setFixedSize(28, 28)
+        self._del_btn.setFlat(True)
         self._del_btn.setToolTip("Quitar de favoritos")
-        self._del_btn.setStyleSheet(
-            f"QToolButton{{border:none;font-size:14px;border-radius:5px;"
-            f"color:{_P['mute']};}}"
-            f"QToolButton:hover{{background:rgba(233,25,22,0.15);"
-            f"color:{_P['red']};}}"
-        )
-        self._del_btn.installEventFilter(self)
+        self._del_btn.setIconSize(QtCore.QSize(18, 18))
         self._del_btn.clicked.connect(lambda: self.removeFav.emit(self._login))
+        ThemedIconViewer(self._del_btn, Icons.TRASH)
         ac.addWidget(self._del_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         root.addWidget(act_w)
 
-    def _set_notif_style(self, on: bool):
-        self._notif_on = on
-        if on:
-            self._notif_btn.setText("🔔")
+    def _update_notif_style(self):
+        """Aplica color de acento al botón de bell cuando está activo."""
+        if self._notif_on:
             self._notif_btn.setStyleSheet(
-                f"QToolButton{{border:1px solid {_P['purple']};font-size:14px;"
-                f"border-radius:5px;color:{_P['purple']};}}"
-                f"QToolButton:hover{{background:{_P['purple_bg']};}}"
+                f"QPushButton{{border-radius:5px;color:{_P['purple']};}}"
+                f"QPushButton:hover{{background:{_P['purple_bg']};}}"
             )
         else:
-            self._notif_btn.setText("🔕")
             self._notif_btn.setStyleSheet(
-                f"QToolButton{{border:1px solid {_P['sep']};font-size:14px;"
-                f"border-radius:5px;color:{_P['mute']};}}"
-                f"QToolButton:hover{{background:rgba(255,255,255,0.06);}}"
+                "QPushButton{border-radius:5px;}"
+                "QPushButton:hover{background:rgba(128,128,128,0.15);}"
             )
 
     def _toggle_notif(self):
-        new_state = not self._notif_on
-        self._set_notif_style(new_state)
+        self._notif_on = not self._notif_on
+        self._bell_viewer.setIcon(Icons.BELL if self._notif_on else Icons.BELL_OFF)
+        self._update_notif_style()
         from Core import App
-        App.Preferences.favorites.set_notif_pref(self._login, new_state)
+        App.Preferences.favorites.set_notif_pref(self._login, self._notif_on)
 
-    # ── Hover ──────────────────────────────────────────────────────────────────
+    # ── Hover ─────────────────────────────────────────────────────────────────
     def enterEvent(self, ev):
         self.setStyleSheet(f"background:{_P['card_h']};border-radius:8px;")
         super().enterEvent(ev)
 
     def leaveEvent(self, ev):
-        self.setStyleSheet("background:transparent;border-radius:8px;")
+        self.setStyleSheet(f"background:{_P['card']};border-radius:8px;")
         super().leaveEvent(ev)
 
     # ── Actualización ─────────────────────────────────────────────────────────
     def update_state(self, ch: FavoriteChannel):
+        self._is_live = ch.is_live
         self._name.setText(ch.display_name)
+        self.setStyleSheet(f"background:{_P['card']};border-radius:8px;")
+        self.update()  # repintar borde izquierdo
 
-        # Sin separador — usamos espaciado entre cards en su lugar
-        self.setStyleSheet("background:transparent;border-radius:8px;")
-
-        # Role badge: usa badge real de Twitch para partner, custom para el resto
+        # Role badge
         _PARTNER_BADGE = (
             "https://static-cdn.jtvnw.net/badges/v1/"
             "d12a2e27-16f6-41d0-ab77-b780518f00a3/1"
@@ -429,52 +447,55 @@ class ChannelCard(QtWidgets.QWidget):
         if ch.is_staff:
             self._role_badge.setText("")
             self._role_badge.setStyleSheet("")
-            self._role_badge.setFixedSize(18, 18)
-            _load(self._role_badge, _STAFF_BADGE, 18, 18)
+            _load(self._role_badge, _STAFF_BADGE, 16, 16)
             self._role_badge.setToolTip("Staff de Twitch")
             self._role_badge.show()
         elif ch.is_partner:
             self._role_badge.setText("")
             self._role_badge.setStyleSheet("")
-            self._role_badge.setFixedSize(18, 18)
-            _load(self._role_badge, _PARTNER_BADGE, 18, 18)
+            _load(self._role_badge, _PARTNER_BADGE, 16, 16)
             self._role_badge.setToolTip("Partner de Twitch")
             self._role_badge.show()
         elif ch.is_affiliate:
             self._role_badge.setText("◈")
-            self._role_badge.setFixedSize(18, 18)
+            self._role_badge.setFixedSize(16, 16)
             self._role_badge.setStyleSheet(
                 f"background:{_P['affiliate']};color:{_P['dim']};"
-                "font-size:10px;font-weight:700;border-radius:4px;"
+                "font-size:9px;font-weight:700;border-radius:3px;"
             )
             self._role_badge.setToolTip("Afiliado de Twitch")
             self._role_badge.show()
         else:
             self._role_badge.hide()
 
+        # Avatar con borde de estado
+        border_color = _P["purple"] if ch.is_live else _P["sep"]
+        self._avatar.setStyleSheet(
+            f"border-radius:{self.AV//2}px;"
+            f"border:2px solid {border_color};"
+        )
+
         if ch.is_live:
-            # Badge "Live" morado
-            self._status_badge.setText("  Live  ")
-            self._status_badge.setStyleSheet(
-                f"background:{_P['badge_live']};color:{_P['text']};"
-                "border-radius:4px;font-size:11px;font-weight:700;"
+            # Badge sobre thumbnail
+            self._thumb_badge.setText("  🔴 Live  ")
+            self._thumb_badge.setStyleSheet(
+                "background:rgba(0,0,0,0.72);color:#fff;"
+                "font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;"
             )
+            self._thumb_badge.adjustSize()
+            self._thumb_badge.show()
 
             self._overlay.hide()
 
-            # Viewers + uptime en _viewers
-            v   = ch.viewers
-            v_s = f"👁  {v:,}" if v else "🔴"
-            self._viewers.setText(v_s)
-            self._viewers.setStyleSheet(
-                f"font-size:12px;color:{_P['dim']};"
-            )
+            # Viewers
+            v = ch.viewers
+            self._viewers.setText(f"👁  {v:,}" if v else "En vivo")
+            self._viewers.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
             self._viewers.show()
 
-            # Título del stream
+            # Título
             title = ch.stream_title or ""
-            if len(title) > 80:
-                title = title[:80] + "…"
+            if len(title) > 80: title = title[:80] + "…"
             self._title.setText(title)
             self._title.setStyleSheet(
                 f"font-size:12px;color:{_P['text']};font-weight:500;"
@@ -493,7 +514,6 @@ class ChannelCard(QtWidgets.QWidget):
                 self._sub_info.setText("")
             self._sub_info.show()
 
-            # Sin partner pill en live
             self._partner_pill.hide()
 
             # Uptime
@@ -504,7 +524,7 @@ class ChannelCard(QtWidgets.QWidget):
                 else None
             )
             self._uptime.set_start(start)
-            QtCore.QTimer.singleShot(50, self._fix_uptime)
+            QtCore.QTimer.singleShot(50, self._fix_uptime_badge)
 
             # Thumbnail
             raw = ch.stream.previewImageURL if ch.stream else ""
@@ -518,42 +538,32 @@ class ChannelCard(QtWidgets.QWidget):
                     _load(self._thumb, url, self.TW, self.TH)
 
         else:
-            # Badge "Offline" gris
-            self._status_badge.setText("  Offline  ")
-            self._status_badge.setStyleSheet(
-                f"background:{_P['badge_off']};color:{_P['dim']};"
-                "border-radius:4px;font-size:11px;font-weight:700;"
-            )
-
+            self._thumb_badge.hide()
             self._overlay.show()
             self._uptime.stop()
             self._last_url = ""
-
             self._viewers.setText("")
             self._viewers.hide()
 
-            # Descripción del canal (lastBroadcast title si existe)
+            # Desc offline
             desc = ""
             if ch.last_broadcast:
                 desc = getattr(ch.last_broadcast, "title", "") or ""
-            if len(desc) > 80:
-                desc = desc[:80] + "…"
+            if len(desc) > 80: desc = desc[:80] + "…"
             self._title.setText(desc)
-            self._title.setStyleSheet(
-                f"font-size:12px;color:{_P['dim']};"
-            )
+            self._title.setStyleSheet(f"font-size:12px;color:{_P['dim']};")
 
-            # Seguidores + último live
             parts = [ch.followers_str, ch.last_broadcast_str]
-            self._sub_info.setText(
-                "  ·  ".join(p for p in parts if p)
-            )
+            self._sub_info.setText("  ·  ".join(p for p in parts if p))
             self._sub_info.setToolTip("")
             self._sub_info.show()
 
-            # Partner pill
             if ch.is_partner:
                 self._partner_pill.setText("  Partner Streamer  ")
+                self._partner_pill.setStyleSheet(
+                    f"background:{_P['partner']};color:#fff;"
+                    "border-radius:4px;font-size:8px;font-weight:700;padding:0 7px;"
+                )
                 self._partner_pill.show()
             elif ch.is_affiliate:
                 self._partner_pill.setText("  Afiliado  ")
@@ -565,7 +575,6 @@ class ChannelCard(QtWidgets.QWidget):
             else:
                 self._partner_pill.hide()
 
-            # Imagen offline del canal
             off = ch.offline_image
             if off and off != self._last_url:
                 self._last_url = off
@@ -573,13 +582,17 @@ class ChannelCard(QtWidgets.QWidget):
             elif not off:
                 self._thumb.setPixmap(_thumb_ph(self.TW, self.TH, offline=True))
 
-        # Avatar
         if ch.profile_image_url:
             _load(self._avatar, ch.profile_image_url, self.AV, self.AV, circle=True)
 
-    def _fix_uptime(self):
+    def _fix_uptime_badge(self):
+        """Posiciona uptime (abajo izquierda) y badge Live (abajo derecha) en la thumbnail."""
         self._uptime.adjustSize()
         self._uptime.move(4, self.TH - self._uptime.height() - 3)
+        if self._thumb_badge.isVisible():
+            self._thumb_badge.adjustSize()
+            bw = self._thumb_badge.width()
+            self._thumb_badge.move(self.TW - bw - 4, self.TH - self._thumb_badge.height() - 3)
 
     def _force_refresh(self):
         base = self._last_url.split("?")[0]
@@ -601,6 +614,8 @@ class _AddDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        if not _P:
+            _build_palette()
         self.setWindowTitle("Agregar canal favorito")
         self.setFixedSize(440, 145)
         lay = QtWidgets.QVBoxLayout(self)
@@ -609,9 +624,7 @@ class _AddDialog(QtWidgets.QDialog):
         lay.addWidget(QtWidgets.QLabel("Nombre de usuario o URL de Twitch:"))
 
         self._edit = QtWidgets.QLineEdit()
-        self._edit.setPlaceholderText(
-            "maryblog   ·   https://www.twitch.tv/maryblog"
-        )
+        self._edit.setPlaceholderText("maryblog   ·   https://www.twitch.tv/maryblog")
         self._edit.setMinimumHeight(30)
         self._edit.textChanged.connect(self._on_change)
         self._edit.returnPressed.connect(self._confirm)
@@ -623,19 +636,14 @@ class _AddDialog(QtWidgets.QDialog):
 
         br = QtWidgets.QHBoxLayout(); br.addStretch()
         c  = QtWidgets.QPushButton("Cancelar")
-        c.setStyleSheet(
-            f"QPushButton{{background:transparent;border:1px solid {_P['sep']};"
-            f"border-radius:5px;padding:4px 14px;color:{_P['dim']};}}"
-            f"QPushButton:hover{{border-color:{_P['dim']};}}"
-        )
         c.clicked.connect(self.reject)
         self._ok = QtWidgets.QPushButton("Agregar")
         self._ok.setDefault(True); self._ok.setEnabled(False)
         self._ok.setStyleSheet(
-            f"QPushButton{{background:{_P['purple']};color:{_P['text']};"
+            f"QPushButton{{background:{_P['purple']};color:#fff;"
             "border:none;border-radius:5px;padding:4px 18px;font-weight:600;}}"
             f"QPushButton:hover{{background:{_P['purple_d']};}}"
-            f"QPushButton:disabled{{background:{_P['badge_off']};color:{_P['mute']};}}"
+            "QPushButton:disabled{opacity:0.4;}"
         )
         self._ok.clicked.connect(self._confirm)
         br.addWidget(c); br.addWidget(self._ok)
@@ -682,6 +690,8 @@ class FavoritesPage(QtWidgets.QWidget):
 
     def __init__(self, manager: FavoritesManager, page_object, parent=None):
         super().__init__(parent=parent)
+        if not _P:
+            _build_palette()
         self._mgr      = manager
         self._page_obj = page_object
         self._cards: dict[str, ChannelCard] = {}
@@ -714,7 +724,7 @@ class FavoritesPage(QtWidgets.QWidget):
         self._live_badge.setFixedHeight(20)
         self._live_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._live_badge.setStyleSheet(
-            f"background:{_P['purple']};color:{_P['text']};"
+            f"background:{_P['purple']};color:#fff;"
             "border-radius:10px;font-size:10px;font-weight:700;padding:0 9px;"
         )
         self._live_badge.setVisible(False)
@@ -728,8 +738,8 @@ class FavoritesPage(QtWidgets.QWidget):
         hl.addWidget(self._spin)
 
         for icon, tip, slot in [
-            ("☰",  "Ordenar", self._show_sort_menu),
-            ("↺",  "Actualizar", self._mgr.poll_now),
+            ("☰",  "Ordenar",      self._show_sort_menu),
+            ("↺",  "Actualizar",   self._mgr.poll_now),
             ("＋", "Añadir canal", self._on_add),
         ]:
             btn = QtWidgets.QToolButton()
@@ -739,7 +749,7 @@ class FavoritesPage(QtWidgets.QWidget):
             btn.setStyleSheet(
                 f"QToolButton{{font-size:14px;border:none;border-radius:5px;"
                 f"color:{_P['dim']};}}"
-                f"QToolButton:hover{{background:rgba(255,255,255,0.08);"
+                f"QToolButton:hover{{background:rgba(128,128,128,0.15);"
                 f"color:{_P['text']};}}"
             )
             btn.clicked.connect(slot)
@@ -762,7 +772,7 @@ class FavoritesPage(QtWidgets.QWidget):
         self._list_w.setStyleSheet(f"background:{_P['bg']};")
         self._list_l = QtWidgets.QVBoxLayout(self._list_w)
         self._list_l.setContentsMargins(8, 6, 8, 6)
-        self._list_l.setSpacing(3)
+        self._list_l.setSpacing(2)
         self._list_l.addStretch()
         self._scroll.setWidget(self._list_w)
         root.addWidget(self._scroll, 1)
@@ -786,7 +796,7 @@ class FavoritesPage(QtWidgets.QWidget):
         be = QtWidgets.QPushButton("＋  Añadir canal")
         be.setFixedHeight(34)
         be.setStyleSheet(
-            f"QPushButton{{background:{_P['purple']};color:{_P['text']};"
+            f"QPushButton{{background:{_P['purple']};color:#fff;"
             "border:none;border-radius:8px;font-size:12px;"
             "padding:0 24px;margin-top:8px;}}"
             f"QPushButton:hover{{background:{_P['purple_d']};}}"
@@ -796,16 +806,12 @@ class FavoritesPage(QtWidgets.QWidget):
         root.addWidget(self._empty, 1)
 
     def _setup_sidebar_badge(self):
-        """Crea el badge rojo de 'N canales live' sobre el botón del sidebar."""
         btn = self._page_obj.button
         self._sidebar_live_badge = QtWidgets.QLabel(btn)
-        self._sidebar_live_badge.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignCenter
-        )
+        self._sidebar_live_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._sidebar_live_badge.setStyleSheet(
             "background:#e91916;color:#fff;"
-            "border-radius:7px;"
-            "font-size:8px;font-weight:700;"
+            "border-radius:7px;font-size:8px;font-weight:700;"
             "border:1px solid rgba(0,0,0,0.25);"
         )
         self._sidebar_live_badge.hide()
@@ -832,7 +838,6 @@ class FavoritesPage(QtWidgets.QWidget):
         m.pollStarted.connect(self._on_poll_start)
         m.pollFinished.connect(lambda: self._spin.setText(""))
 
-    # ── Slots ─────────────────────────────────────────────────────────────────
     def _on_add(self):
         d = _AddDialog(self); d.confirmed.connect(self._mgr.add); d.exec()
 
@@ -863,17 +868,14 @@ class FavoritesPage(QtWidgets.QWidget):
             self._reload_order()
 
     def _on_live_count(self, count):
-        # Badge en el header de la página
         if count:
             self._live_badge.setText(f"  🔴  {count} en vivo  ")
             self._live_badge.setVisible(True)
         else:
             self._live_badge.setVisible(False)
 
-        # Badge rojo sobre el botón del sidebar
         if count:
             txt = str(count) if count < 100 else "99+"
-            # Ancho dinámico: 14px base + 6px por caracter extra
             badge_w = max(14, len(txt) * 6 + 6)
             self._sidebar_live_badge.setFixedSize(badge_w, 14)
             self._sidebar_live_badge.setText(txt)
@@ -889,16 +891,6 @@ class FavoritesPage(QtWidgets.QWidget):
         except Exception:
             pass
 
-    def _apply_filter(self, text):
-        t = text.lower()
-        for login, card in self._cards.items():
-            ch = self._mgr.get(login)
-            card.setVisible(
-                not t or t in login
-                or (ch and t in ch.display_name.lower())
-                or (ch and t in ch.game_name.lower())
-            )
-
     def _on_poll_start(self):
         self._spin.setText("⟳")
         frames = ["⟳","↻","↺"]; idx = [0]
@@ -909,7 +901,6 @@ class FavoritesPage(QtWidgets.QWidget):
                 QtCore.QTimer.singleShot(160, tick)
         QtCore.QTimer.singleShot(160, tick)
 
-    # ── Helpers ───────────────────────────────────────────────────────────────
     def _reload_all(self):
         for card in list(self._cards.values()):
             self._list_l.removeWidget(card); card.setParent(None)
