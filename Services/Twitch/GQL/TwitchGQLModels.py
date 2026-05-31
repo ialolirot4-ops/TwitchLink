@@ -192,6 +192,6 @@ class VideoPlaybackAccessToken(TwitchGQLObject):
 class ClipPlaybackAccessToken(TwitchGQLObject):
     def __init__(self, data: dict):
         self.id: str = data.get("id", "")
-        self.videoQualities: list[dict] = data.get("videoQualities")
+        self.videoQualities: list[dict] = data.get("videoQualities") or []
         self.signature: str = data.get("playbackAccessToken", {}).get("signature") or ""
         self.value: str = data.get("playbackAccessToken", {}).get("value") or ""

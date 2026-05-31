@@ -9,7 +9,7 @@ class Resolution(Serializable):
     SERIALIZABLE_INIT_MODEL = False
     SERIALIZABLE_STRICT_MODE = False
 
-    RESOLUTION_TEXT = re.compile("(\d+)p(\d+(?:\.\d+)?)")
+    RESOLUTION_TEXT = re.compile(r"(\d+)p(\d+(?:\.\d+)?)")
 
     def __init__(self, name: str, groupId: str, url: QtCore.QUrl, autoSelect: bool = True, default: bool = True):
         self.name: str = name

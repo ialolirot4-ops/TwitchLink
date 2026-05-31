@@ -1,7 +1,7 @@
 __pycache__/
 Backup/
 
-.zip
+*.zip
 StartTwitchLink.vbs
 venv/
 .venv/

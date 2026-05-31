@@ -29,8 +29,8 @@ class PlaylistTag:
 
 
 class PlaylistTagReader:
-    TAG_WITH_DATA = re.compile("#(.*?):(.*)")
-    TAG_WITHOUT_DATA = re.compile("#(.*)")
+    TAG_WITH_DATA = re.compile(r"#(.*?):(.*)")
+    TAG_WITHOUT_DATA = re.compile(r"#(.*)")
 
     @classmethod
     def getTag(self, string: str) -> PlaylistTag | None:
