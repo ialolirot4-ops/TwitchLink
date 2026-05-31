@@ -377,7 +377,7 @@ class ChannelCard(QtWidgets.QWidget):
         self._avatar.setFixedSize(self.AV, self.AV)
         self._avatar.setPixmap(_avatar_ph(self.AV))
         self._avatar.setStyleSheet(
-            f"border-radius:{self.AV//2}px;border:2px solid {_P['sep']};"
+            f"border-radius:{self.AV//2}px;border:4px solid {_P['sep']};"
         )
         r1.addWidget(self._avatar, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
@@ -573,7 +573,7 @@ class ChannelCard(QtWidgets.QWidget):
 
         border_color = _P["purple"] if ch.is_live else _P["sep"]
         self._avatar.setStyleSheet(
-            f"border-radius:{self.AV//2}px;border:2px solid {border_color};"
+            f"border-radius:{self.AV//2}px;border:4px solid {border_color};"
         )
 
         if ch.is_live:
