@@ -149,14 +149,14 @@ class _SectionHeader(QtWidgets.QWidget):
     """
     toggled = QtCore.pyqtSignal(bool)   # emite True cuando se colapsa
 
-    def __init__(self, label: str, live: bool, collapsible: bool = False, parent=None):
+    def __init__(self, label: str, live: bool, collapsible: bool = False, start_collapsed: bool = False, parent=None):
         super().__init__(parent=parent)
         if not _P:
             _build_palette()
         self._live        = live
         self._count       = 0
         self._collapsible = collapsible
-        self._collapsed   = False
+        self._collapsed   = start_collapsed if collapsible else False
         self.setFixedHeight(32)
         self.setStyleSheet("background:transparent;")
 
@@ -197,7 +197,7 @@ class _SectionHeader(QtWidgets.QWidget):
 
         # Chevron al final, lado derecho (solo en secciones colapsables)
         if collapsible:
-            self._chevron = QtWidgets.QLabel("▼")
+            self._chevron = QtWidgets.QLabel("▶" if self._collapsed else "▼")
             self._chevron.setFixedWidth(14)
             self._chevron.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             self._chevron.setStyleSheet(f"font-size:9px;color:{_P['dim']};")
@@ -854,8 +854,8 @@ class FavoritesPage(QtWidgets.QWidget):
         root.addWidget(self._scroll, 1)
 
         # Sección headers — se insertan/remueven en _rebuild_layout
-        self._hdr_live    = _SectionHeader("EN VIVO", live=True,  collapsible=False, parent=self._list_w)
-        self._hdr_offline = _SectionHeader("OFFLINE", live=False, collapsible=True,  parent=self._list_w)
+        self._hdr_live    = _SectionHeader("EN VIVO", live=True,  collapsible=False,                    parent=self._list_w)
+        self._hdr_offline = _SectionHeader("OFFLINE", live=False, collapsible=True, start_collapsed=True, parent=self._list_w)
 
         # Placeholder vacío
         self._empty = QtWidgets.QWidget()
@@ -901,38 +901,38 @@ class FavoritesPage(QtWidgets.QWidget):
         """Reordena todos los widgets en el layout respetando secciones."""
         lay = self._list_l
 
-        # Sacar todos los widgets del layout (sin destruirlos)
+        # 1. Sacar del layout sin cambiar el padre
         while lay.count() > 0:
-            item = lay.takeAt(0)
-            if item.widget():
-                item.widget().setParent(None)
+            lay.takeAt(0)
 
-        channels   = self._mgr.channels()
+        # 2. Ocultar todo antes de reordenar (evita ventanas flotantes)
+        self._hdr_live.hide()
+        self._hdr_offline.hide()
+        for card in self._cards.values():
+            card.hide()
+
+        channels    = self._mgr.channels()
         live_logins = [ch.login for ch in channels if ch.is_live]
         off_logins  = [ch.login for ch in channels if not ch.is_live]
 
-        # Sección EN VIVO
+        # 3. EN VIVO — primero addWidget, luego set_count (que llama setVisible)
+        lay.addWidget(self._hdr_live)
         self._hdr_live.set_count(len(live_logins))
-        if live_logins:
-            self._hdr_live.setParent(self._list_w)
-            lay.addWidget(self._hdr_live)
-            for login in live_logins:
+        for login in live_logins:
+            card = self._cards.get(login)
+            if card:
+                lay.addWidget(card)
+                card.show()
+
+        # 4. OFFLINE — igual
+        lay.addWidget(self._hdr_offline)
+        self._hdr_offline.set_count(len(off_logins))
+        if not self._hdr_offline.is_collapsed():
+            for login in off_logins:
                 card = self._cards.get(login)
                 if card:
-                    card.setParent(self._list_w)
                     lay.addWidget(card)
-
-        # Sección OFFLINE
-        self._hdr_offline.set_count(len(off_logins))
-        if off_logins:
-            self._hdr_offline.setParent(self._list_w)
-            lay.addWidget(self._hdr_offline)
-            if not self._hdr_offline.is_collapsed():
-                for login in off_logins:
-                    card = self._cards.get(login)
-                    if card:
-                        card.setParent(self._list_w)
-                        lay.addWidget(card)
+                    card.show()
 
         lay.addStretch()
 
