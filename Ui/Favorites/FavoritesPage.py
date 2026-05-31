@@ -167,13 +167,6 @@ class _SectionHeader(QtWidgets.QWidget):
         lay.setContentsMargins(12, 0, 16, 0)
         lay.setSpacing(8)
 
-        # Chevron (solo en secciones colapsables)
-        if collapsible:
-            self._chevron = QtWidgets.QLabel("▼")
-            self._chevron.setFixedWidth(12)
-            self._chevron.setStyleSheet(f"font-size:9px;color:{_P['dim']};")
-            lay.addWidget(self._chevron)
-
         # Punto de estado
         dot = QtWidgets.QLabel("●")
         dot.setFixedWidth(10)
@@ -201,6 +194,14 @@ class _SectionHeader(QtWidgets.QWidget):
                                      QtCore.Qt.AlignmentFlag.AlignVCenter)
         self._count_lbl.setStyleSheet(f"font-size:10px;color:{_P['mute']};")
         lay.addWidget(self._count_lbl)
+
+        # Chevron al final, lado derecho (solo en secciones colapsables)
+        if collapsible:
+            self._chevron = QtWidgets.QLabel("▼")
+            self._chevron.setFixedWidth(14)
+            self._chevron.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            self._chevron.setStyleSheet(f"font-size:9px;color:{_P['dim']};")
+            lay.addWidget(self._chevron)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if self._collapsible and event.button() == QtCore.Qt.MouseButton.LeftButton:
