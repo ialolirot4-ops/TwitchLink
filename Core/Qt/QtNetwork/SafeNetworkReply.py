@@ -72,6 +72,22 @@ class SafeNetworkReply(QtCore.QObject):
                 self._handleRuntimeError(e)
         return None
 
+    def bytesAvailable(self) -> int:
+        if not self._hasRuntimeError():
+            try:
+                return self._reply.bytesAvailable()
+            except RuntimeError as e:
+                self._handleRuntimeError(e)
+        return 0
+
+    def read(self, maxSize: int) -> QtCore.QByteArray:
+        if not self._hasRuntimeError():
+            try:
+                return self._reply.read(maxSize)
+            except RuntimeError as e:
+                self._handleRuntimeError(e)
+        return QtCore.QByteArray()
+
     def readAll(self) -> QtCore.QByteArray:
         if not self._hasRuntimeError():
             try:
