@@ -97,3 +97,32 @@ SocialDownloadManager = _SocialMediaDownloadManager(parent=Instance)
 from AppData.Preferences import Preferences as _Preferences
 Preferences = _Preferences(logger=Instance.logger, parent=Instance)
 Preferences.load()
+
+
+def _onTokenExpiryWarning(daysLeft: int) -> None:
+    """Show a proactive notification before the OAuth token expires."""
+    if daysLeft == 0:
+        title   = "Session expires today"
+        message = "Your Twitch session expires today. Open Account settings to sign in again."
+        icon    = Instance.notification.Icons.Warning
+    elif daysLeft <= 3:
+        title   = f"Session expires in {daysLeft} day(s)"
+        message = (
+            f"Your Twitch session will expire in {daysLeft} day(s). "
+            "Sign in again to avoid download interruptions."
+        )
+        icon    = Instance.notification.Icons.Warning
+    else:
+        title   = f"Session expires in {daysLeft} day(s)"
+        message = f"Your Twitch session will expire in {daysLeft} day(s)."
+        icon    = Instance.notification.Icons.Information
+
+    Instance.notification.toastMessage(
+        title   = title,
+        message = message,
+        icon    = icon,
+        # Lazy reference — mainWindow is set on Instance after startup
+        action  = lambda: Instance.mainWindow.accountPageObject.show(),
+    )
+
+Account.expiryWarning.connect(_onTokenExpiryWarning)

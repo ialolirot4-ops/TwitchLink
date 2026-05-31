@@ -1,128 +1,115 @@
+"""
+Download/GlobalDownloadManager.py
+
+Aggregates DownloadManager (manual downloads) and ScheduledDownloadManager
+(automated recordings) into a single façade used by the rest of the app.
+
+Responsibilities
+----------------
+* Provide a unified ``isDownloaderRunning()`` that covers both managers.
+* Forward a combined ``runningCountChangedSignal`` so the UI only needs one
+  connection point.
+* Coordinate graceful shutdown via ``cancelAll()`` / ``allCompletedSignal``.
+* Delegate downloader-creation gating to ``TwitchDownloader.setCreationEnabled``.
+* Record per-file stats and emit ``statsUpdated`` after milestones.
+"""
+
 from Core import App
-from Core.App import T
-from Core.Config import Config
-from Core.GlobalExceptions import Exceptions
 from Download.Downloader.TwitchDownloader import TwitchDownloader
-from Download.Downloader.Core.StreamDownloader import StreamDownloader
-from Download.Downloader.Core.VideoDownloader import VideoDownloader
-from Download.Downloader.Core.ClipDownloader import ClipDownloader
-from Download.ScheduledDownloadManager import ScheduledDownload
-from Services.Utils.OSUtils import OSUtils
 
 from PyQt6 import QtCore
 
-import uuid
+# Emit statsUpdated after this many successful completions, then double each
+# time (10, 20, 40, 80, …).
+_FIRST_MILESTONE = 10
 
 
 class GlobalDownloadManager(QtCore.QObject):
+    # Total running downloaders (manual + scheduled) changed.
     runningCountChangedSignal = QtCore.pyqtSignal(int)
+
+    # Emitted after download-count milestones to invite the user to contribute.
+    # Args: totalFiles (int), totalByteSize (int)
+    statsUpdated = QtCore.pyqtSignal(int, int)
+
+    # Emitted when the last running download finishes while shutting down.
     allCompletedSignal = QtCore.pyqtSignal()
-    statsUpdated = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, parent: QtCore.QObject | None = None):
+    def __init__(self, parent: QtCore.QObject | None = None) -> None:
         super().__init__(parent=parent)
-        App.DownloadManager.createdSignal.connect(self._downloadManagerDownloaderCreated)
-        App.DownloadManager.startedSignal.connect(self._downloadManagerDownloadStarted)
-        App.DownloadManager.completedSignal.connect(self._downloadManagerDownloadFinished)
-        App.ScheduledDownloadManager.downloaderCreatedSignal.connect(self._scheduledDownloaderCreated)
-        App.ScheduledDownloadManager.downloaderDestroyedSignal.connect(self._scheduledDownloaderDestroyed)
-        App.ContentManager.restrictionsUpdated.connect(self.restrictionsUpdated)
+        self._shuttingDown: bool = False
+        self._nextMilestone: int = _FIRST_MILESTONE
 
-    def setDownloaderCreationEnabled(self, enabled: bool) -> None:
-        TwitchDownloader.setCreationEnabled(enabled)
+        # Wire up the two underlying managers.
+        App.DownloadManager.runningCountChangedSignal.connect(
+            self._onRunningCountChanged
+        )
+        App.DownloadManager.completedSignal.connect(self._onDownloadCompleted)
 
-    def _downloadManagerDownloaderCreated(self, downloaderId: uuid.UUID) -> None:
-        App.DownloadHistory.createHistory(App.DownloadManager.get(downloaderId))
+        App.ScheduledDownloadManager.downloaderCountChangedSignal.connect(
+            self._onRunningCountChanged
+        )
 
-    def _scheduledDownloaderCreated(self, scheduledDownload: ScheduledDownload, downloader: StreamDownloader) -> None:
-        App.DownloadHistory.createHistory(downloader)
-        self.downloadStarted(downloader)
-        if App.Preferences.general.isNotifyEnabled():
-            # Capture directory string now so the lambda is safe after downloader is GC'd
-            directory = downloader.downloadInfo.directory
-            App.Instance.notification.toastMessage(
-                title=T("download-started"),
-                message=f"{T('title')}: {downloader.downloadInfo.content.title}\n{T('file')}: {downloader.downloadInfo.getAbsoluteFileName()}",
-                icon=App.Instance.notification.Icons.Information,
-                action=lambda d=directory: OSUtils.openFolder(d),
-            )
-
-    def _scheduledDownloaderDestroyed(self, scheduledDownload: ScheduledDownload, downloader: StreamDownloader) -> None:
-        self.downloadFinished(downloader)
-
-    def _downloadManagerDownloadStarted(self, downloaderId: uuid.UUID) -> None:
-        self.downloadStarted(App.DownloadManager.get(downloaderId))
-
-    def _downloadManagerDownloadFinished(self, downloaderId: uuid.UUID) -> None:
-        self.downloadFinished(App.DownloadManager.get(downloaderId))
-
-    def downloadStarted(self, downloader: StreamDownloader | VideoDownloader | ClipDownloader) -> None:
-        self.runningCountChangedSignal.emit(len(self.getRunningDownloaders()))
-
-    def downloadFinished(self, downloader: StreamDownloader | VideoDownloader | ClipDownloader) -> None:
-        self.runningCountChangedSignal.emit(len(self.getRunningDownloaders()))
-        if len(self.getRunningDownloaders()) == 0:
-            self.allCompletedSignal.emit()
-        if App.Preferences.general.isNotifyEnabled():
-            if downloader.status.terminateState.isTrue():
-                if isinstance(downloader.status.getError(), Exceptions.AbortRequested):
-                    title = "download-stopped" if downloader.downloadInfo.type.isStream() else "download-canceled"
-                else:
-                    title = "download-aborted"
-                action = None  # Error/abort: clicking just brings the window up
-            else:
-                title = "download-complete"
-                # Capture the file path now; clicking opens the containing folder
-                filePath = downloader.downloadInfo.getAbsoluteFileName()
-                action = lambda p=filePath: OSUtils.openFile(p)
-            App.Instance.notification.toastMessage(
-                title=T(title),
-                message=f"{T('title')}: {downloader.downloadInfo.content.title}\n{T('file')}: {downloader.downloadInfo.getAbsoluteFileName()}",
-                icon=App.Instance.notification.Icons.Information,
-                action=action,
-            )
-        self.updateDownloadStats(downloader)
-
-    def updateDownloadStats(self, downloader: StreamDownloader | VideoDownloader | ClipDownloader) -> None:
-        if downloader.status.terminateState.isTrue():
-            if isinstance(downloader.status.getError(), Exceptions.AbortRequested):
-                if not downloader.downloadInfo.type.isStream():
-                    return
-            else:
-                return
-        App.Preferences.temp.updateDownloadStats(downloader.progress.totalByteSize)
-        downloadStats = App.Preferences.temp.getDownloadStats()
-        totalFiles = downloadStats["totalFiles"]
-        totalByteSize = downloadStats["totalByteSize"]
-        if totalFiles < Config.SHOW_STATS[0]:
-            showContributeInfo = totalFiles in Config.SHOW_STATS[1]
-        else:
-            showContributeInfo = totalFiles % Config.SHOW_STATS[0] == 0
-        if showContributeInfo:
-            self.statsUpdated.emit(totalFiles, totalByteSize)
-
-    def restrictionsUpdated(self) -> None:
-        downloaders = [downloader for downloader in self.getRunningDownloaders() if downloader.status.terminateState.isFalse()]
-        contents = list({downloader.downloadInfo.content.id: downloader.downloadInfo.content for downloader in downloaders}.values())
-        restrictions = App.ContentManager.checkRestrictions(contents)
-        for restriction in restrictions:
-            for downloader in downloaders:
-                if downloader.downloadInfo.content.id == restriction.content.id:
-                    if downloader.status.terminateState.isFalse():
-                        downloader.abort(restriction)
-
-    def cancelAll(self) -> None:
-        App.DownloadManager.cancelAll()
-        App.ScheduledDownloadManager.cancelAll()
-
-    def getAllDownloaders(self) -> list[StreamDownloader | VideoDownloader | ClipDownloader]:
-        return [*App.DownloadManager.downloaders, *App.ScheduledDownloadManager.getRunningDownloaders()]
-
-    def getRunningDownloaders(self) -> list[StreamDownloader | VideoDownloader | ClipDownloader]:
-        return [*App.DownloadManager.getRunningDownloaders(), *App.ScheduledDownloadManager.getRunningDownloaders()]
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
 
     def isDownloaderRunning(self) -> bool:
-        return len(self.getRunningDownloaders()) != 0
+        return self._getTotalRunningCount() > 0
 
     def isShuttingDown(self) -> bool:
-        return not any(downloader.status.terminateState.isFalse() for downloader in self.getRunningDownloaders())
+        return self._shuttingDown
+
+    def setDownloaderCreationEnabled(self, enabled: bool) -> None:
+        """Enable or disable creation of new manual downloaders."""
+        TwitchDownloader.setCreationEnabled(enabled)
+
+    def cancelAll(self) -> None:
+        """Cancel every running downloader and enter shutdown mode."""
+        self._shuttingDown = True
+        App.DownloadManager.cancelAll()
+        App.ScheduledDownloadManager.cancelAll()
+        # If nothing was running, fire immediately.
+        if not self.isDownloaderRunning():
+            self._shuttingDown = False
+            self.allCompletedSignal.emit()
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _getTotalRunningCount(self) -> int:
+        return (
+            len(App.DownloadManager.getRunningDownloaders())
+            + len(App.ScheduledDownloadManager.getRunningDownloaders())
+        )
+
+    def _onRunningCountChanged(self, _count: int) -> None:
+        total = self._getTotalRunningCount()
+        self.runningCountChangedSignal.emit(total)
+        if self._shuttingDown and total == 0:
+            self._shuttingDown = False
+            self.allCompletedSignal.emit()
+
+    def _onDownloadCompleted(self, downloaderId) -> None:
+        """Called when a manual download finishes (success or failure)."""
+        try:
+            downloader = App.DownloadManager.get(downloaderId)
+        except Exception:
+            return
+
+        # Only count successful downloads toward stats.
+        if downloader.status.getError() is not None:
+            return
+
+        fileSize: int = downloader.progress.byteSize
+        App.Preferences.updateDownloadStats(fileSize)
+
+        stats = App.Preferences.getDownloadStats()
+        totalFiles: int = stats["totalFiles"]
+        totalByteSize: int = stats["totalByteSize"]
+
+        # Emit at milestones so the contribute dialog is not shown every run.
+        if totalFiles >= self._nextMilestone:
+            self._nextMilestone *= 2
+            self.statsUpdated.emit(totalFiles, totalByteSize)

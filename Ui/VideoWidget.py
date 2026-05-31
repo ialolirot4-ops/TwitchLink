@@ -22,6 +22,7 @@ class VideoWidget(QtWidgets.QWidget):
             self.setVideoInfo()
         elif isinstance(self.content, Clip):
             self.setClipInfo()
+        self._ui.thumbnailImage.setClickUrl(self.getTwitchUrl())
         if isinstance(self.content, Channel) or showMore:
             self._ui.more.hide()
         else:
@@ -31,6 +32,17 @@ class VideoWidget(QtWidgets.QWidget):
     @property
     def thumbnailImage(self) -> QtWidgets.QLabel:
         return self._ui.thumbnailImage
+
+    def getTwitchUrl(self) -> str:
+        if isinstance(self.content, Channel):
+            return self.content.profileURL
+        elif isinstance(self.content, Stream):
+            return f"https://www.twitch.tv/{self.content.broadcaster.login}"
+        elif isinstance(self.content, Video):
+            return f"https://www.twitch.tv/videos/{self.content.id}"
+        elif isinstance(self.content, Clip):
+            return self.content.url
+        return ""
 
     def setBroadcastInfo(self) -> None:
         data = {

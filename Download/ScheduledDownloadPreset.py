@@ -78,6 +78,10 @@ class ScheduledDownloadPreset(Serializable):
         self.remux = self.optionHistory.isRemuxEnabled()
         self.preferredResolutionOnly = False
         self.enabled = True
+        # ── Recording conditions ──────────────────────────────────────────────
+        self.gameFilter = ""    # only record when game name contains this (case-insensitive; empty = any)
+        self.titleFilter = ""   # only record when title contains this (case-insensitive; empty = any)
+        self.maxRecordings = 0  # stop after this many recordings (0 = unlimited)
 
     def setEnabled(self, enabled: bool) -> None:
         self.enabled = enabled
@@ -156,6 +160,24 @@ class ScheduledDownloadPreset(Serializable):
 
     def isPreferredResolutionOnlyEnabled(self) -> bool:
         return self.preferredResolutionOnly
+
+    def setGameFilter(self, value: str) -> None:
+        self.gameFilter = value.strip()
+
+    def getGameFilter(self) -> str:
+        return self.gameFilter
+
+    def setTitleFilter(self, value: str) -> None:
+        self.titleFilter = value.strip()
+
+    def getTitleFilter(self) -> str:
+        return self.titleFilter
+
+    def setMaxRecordings(self, value: int) -> None:
+        self.maxRecordings = max(0, value)
+
+    def getMaxRecordings(self) -> int:
+        return self.maxRecordings
 
     def selectResolution(self, resolutions: list[Resolution]) -> Resolution:
         if self.preferredQuality == self.AVAILABLE_QUALITY.BEST:

@@ -58,6 +58,35 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self._ui.nextDownloadLabel.setVisible(self.isEditMode)
         self.updateFilenamePreview()
 
+        # ── Recording conditions group (programmatic) ─────────────────────────
+        condGroup = QtWidgets.QGroupBox(T("#Recording conditions"), parent=self)
+        condForm  = QtWidgets.QFormLayout(condGroup)
+        condForm.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+
+        self._gameFilterEdit = QtWidgets.QLineEdit(parent=condGroup)
+        self._gameFilterEdit.setPlaceholderText(T("#Any game"))
+        self._gameFilterEdit.setText(self.virtualPreset.getGameFilter())
+        self._gameFilterEdit.setToolTip(T("#Record only when the game name contains this text (case-insensitive). Leave empty to record any game."))
+        condForm.addRow(T("#Game contains:"), self._gameFilterEdit)
+
+        self._titleFilterEdit = QtWidgets.QLineEdit(parent=condGroup)
+        self._titleFilterEdit.setPlaceholderText(T("#Any title"))
+        self._titleFilterEdit.setText(self.virtualPreset.getTitleFilter())
+        self._titleFilterEdit.setToolTip(T("#Record only when the stream title contains this text (case-insensitive). Leave empty to record any title."))
+        condForm.addRow(T("#Title contains:"), self._titleFilterEdit)
+
+        self._maxRecordingsSpin = QtWidgets.QSpinBox(parent=condGroup)
+        self._maxRecordingsSpin.setRange(0, 9999)
+        self._maxRecordingsSpin.setSpecialValueText(T("#Unlimited"))
+        self._maxRecordingsSpin.setValue(self.virtualPreset.getMaxRecordings())
+        self._maxRecordingsSpin.setToolTip(T("#Stop recording after this many streams (0 = unlimited). Resets when the app restarts."))
+        condForm.addRow(T("#Max recordings:"), self._maxRecordingsSpin)
+
+        # Insert before the last widget (save/cancel button row) in the dialog layout
+        dialogLayout = self._ui.Dialog.layout() if hasattr(self._ui, "Dialog") else self.layout()
+        dialogLayout.insertWidget(dialogLayout.count() - 1, condGroup)
+        # ─────────────────────────────────────────────────────────────────────
+
     def channelChanged(self, text: str) -> None:
         channel = text.lower()
         self.virtualPreset.setChannel(channel)
@@ -153,6 +182,10 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self.scheduledDownloadPreset.preferredResolutionOnly = self.virtualPreset.preferredResolutionOnly
         self.scheduledDownloadPreset.skipAds = self.virtualPreset.skipAds
         self.scheduledDownloadPreset.remux = self.virtualPreset.remux
+        # Recording conditions
+        self.scheduledDownloadPreset.setGameFilter(self._gameFilterEdit.text())
+        self.scheduledDownloadPreset.setTitleFilter(self._titleFilterEdit.text())
+        self.scheduledDownloadPreset.setMaxRecordings(self._maxRecordingsSpin.value())
 
     def getChannelFromText(self, text: str) -> str | None:
         parsedData = TwitchQueryParser.parseQuery(text)

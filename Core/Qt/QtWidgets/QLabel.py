@@ -16,6 +16,7 @@ class _QLabel(QtWidgets.QLabel):
         self._imageLoading = False
         self.setKeepAspectRatio(False)
         self._imageSynced = False
+        self._clickUrl = ""
 
     def loadImage(self, filePath: str, url: str = "", urlFormatSize: tuple[int | None, int | None] | None = None, refresh: bool = False, clearImage: bool = True) -> None:
         self.cancelImageRequest()
@@ -74,6 +75,18 @@ class _QLabel(QtWidgets.QLabel):
         self._keepAspectRatio = keepAspectRatio
         self.setScaledContents(not self._keepAspectRatio)
 
+    def setClickUrl(self, url: str) -> None:
+        self._clickUrl = url
+        if url:
+            self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        else:
+            self.unsetCursor()
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton and self._clickUrl:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl(self._clickUrl))
+        super().mousePressEvent(event)
+
     def text(self) -> str:
         return self._text
 
@@ -113,4 +126,5 @@ class _QLabel(QtWidgets.QLabel):
             self.cancelImageRequest()
         except:
             pass
+
 QtWidgets.QLabel = _QLabel #Direct Class Patch - [Warning] Does not affect embedded objects (Use with caution)

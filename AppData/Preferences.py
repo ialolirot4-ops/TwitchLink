@@ -50,6 +50,7 @@ class General(Serializable):
         self._notify = True
         self._useSystemTray = False
         self._bookmarks = []
+        self._postProcessCommand = ""   # command template run after each successful download
 
     def setOpenProgressWindowEnabled(self, enabled: bool) -> None:
         self._openProgressWindow = enabled
@@ -63,6 +64,9 @@ class General(Serializable):
     def setBookmarks(self, bookmarks: list[str]) -> None:
         self._bookmarks = bookmarks
 
+    def setPostProcessCommand(self, command: str) -> None:
+        self._postProcessCommand = command.strip()
+
     def isOpenProgressWindowEnabled(self) -> bool:
         return self._openProgressWindow
 
@@ -74,6 +78,9 @@ class General(Serializable):
 
     def getBookmarks(self) -> list[str]:
         return self._bookmarks
+
+    def getPostProcessCommand(self) -> str:
+        return self._postProcessCommand
 
 
 class Templates(Serializable):

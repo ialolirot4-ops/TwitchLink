@@ -2,7 +2,8 @@
 Ui/Favorites/FavoritesPage.py
 
 Paleta unificada con la app via App.Instance.palette().
-Botones nativos via Icons + setIconViewer.
+Botones nativos via Icons + ThemedIconViewer.
+Secciones "EN VIVO" / "OFFLINE" con headers dinámicos.
 """
 from __future__ import annotations
 from Services.Favorites.FavoritesManager import (
@@ -33,8 +34,8 @@ def _build_palette() -> None:
     base = pal.color(G.Active, R.Base)
     text = pal.color(G.Active, R.WindowText)
     mid  = pal.color(G.Active, R.Mid)
-
     is_dark = win.lightness() < 128
+
     d = 14 if is_dark else -10
     card_h = QtGui.QColor(
         max(0, min(255, base.red()   + d)),
@@ -44,25 +45,22 @@ def _build_palette() -> None:
     aff = "#454560" if is_dark else "#9898c8"
 
     _P.update({
-        "bg":         win.name(),
-        "card":       base.name(),
-        "card_h":     card_h,
-        "sep":        mid.name(),
-        "purple":     "#9147ff",
-        "purple_d":   "#7b3fe4",
-        "purple_bg":  "rgba(145,71,255,0.15)",
-        "red":        "#e91916",
-        "text":       text.name(),
-        "dim":        rgba(R.WindowText, 0.65),
-        "mute":       rgba(R.WindowText, 0.38),
-        "badge_live": "#9147ff",
-        "badge_off":  mid.name(),
-        "partner":    "#9147ff",
-        "affiliate":  aff,
-        "staff":      "#c0392b",
+        "bg":        win.name(),
+        "card":      base.name(),
+        "card_h":    card_h,
+        "sep":       mid.name(),
+        "purple":    "#9147ff",
+        "purple_d":  "#7b3fe4",
+        "purple_bg": "rgba(145,71,255,0.15)",
+        "red":       "#e91916",
+        "text":      text.name(),
+        "dim":       rgba(R.WindowText, 0.65),
+        "mute":      rgba(R.WindowText, 0.38),
+        "partner":   "#9147ff",
+        "affiliate": aff,
     })
 
-# ─── Caché de imágenes (LRU, máx 120 entradas) ───────────────────────────────
+# ─── Caché de imágenes LRU (máx 120) ─────────────────────────────────────────
 from collections import OrderedDict
 _CACHE: OrderedDict[str, QtGui.QPixmap] = OrderedDict()
 _CACHE_MAX = 120
@@ -142,6 +140,84 @@ def _thumb_ph(w: int, h: int, offline=False) -> QtGui.QPixmap:
     return pm
 
 
+# ─── Header de sección ────────────────────────────────────────────────────────
+class _SectionHeader(QtWidgets.QWidget):
+    """
+    Separador visual entre secciones EN VIVO / OFFLINE.
+    Muestra un punto de color, el label, una línea separadora y el contador.
+    Si collapsible=True, al hacer clic colapsa/expande la sección.
+    """
+    toggled = QtCore.pyqtSignal(bool)   # True = collapsed
+
+    def __init__(self, label: str, live: bool, collapsible: bool = False, parent=None):
+        super().__init__(parent=parent)
+        if not _P:
+            _build_palette()
+        self._live        = live
+        self._count       = 0
+        self._collapsible = collapsible
+        self._collapsed   = False
+        self.setFixedHeight(32)
+        self.setStyleSheet("background:transparent;")
+        if collapsible:
+            self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+
+        lay = QtWidgets.QHBoxLayout(self)
+        lay.setContentsMargins(12, 0, 16, 0)
+        lay.setSpacing(8)
+
+        # Punto de estado
+        dot = QtWidgets.QLabel("●")
+        dot.setFixedWidth(10)
+        dot_color = _P["purple"] if live else _P["sep"]
+        dot.setStyleSheet(f"font-size:8px;color:{dot_color};")
+        lay.addWidget(dot)
+
+        # Texto de sección
+        lbl = QtWidgets.QLabel(label)
+        lbl.setStyleSheet(
+            f"font-size:10px;font-weight:700;letter-spacing:1px;color:{_P['dim']};"
+        )
+        lay.addWidget(lbl)
+
+        # Línea separadora
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        line.setStyleSheet(f"color:{_P['sep']};")
+        lay.addWidget(line, 1)
+
+        # Contador
+        self._count_lbl = QtWidgets.QLabel("0")
+        self._count_lbl.setFixedWidth(24)
+        self._count_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight |
+                                     QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self._count_lbl.setStyleSheet(f"font-size:10px;color:{_P['mute']};")
+        lay.addWidget(self._count_lbl)
+
+        # Flecha de colapso (solo si collapsible)
+        if collapsible:
+            self._arrow_lbl = QtWidgets.QLabel("▾")
+            self._arrow_lbl.setFixedWidth(14)
+            self._arrow_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            self._arrow_lbl.setStyleSheet(f"font-size:10px;color:{_P['dim']};")
+            lay.addWidget(self._arrow_lbl)
+
+    def mousePressEvent(self, ev):
+        if self._collapsible and ev.button() == QtCore.Qt.MouseButton.LeftButton:
+            self._collapsed = not self._collapsed
+            self._arrow_lbl.setText("▸" if self._collapsed else "▾")
+            self.toggled.emit(self._collapsed)
+        super().mousePressEvent(ev)
+
+    def is_collapsed(self) -> bool:
+        return self._collapsed
+
+    def set_count(self, n: int) -> None:
+        self._count = n
+        self._count_lbl.setText(str(n))
+        self.setVisible(n > 0)
+
+
 # ─── Uptime ───────────────────────────────────────────────────────────────────
 class _Uptime(QtWidgets.QLabel):
     def __init__(self, parent=None):
@@ -190,40 +266,38 @@ class ChannelCard(QtWidgets.QWidget):
         self._last_url = ""
         self._is_live  = False
         from Core import App
-        self._notif_on = App.Preferences.favorites.get_notif_pref(ch.login)
-        self._tc        = None
-        self._ref_btn   = None
-        self._notif_btn = None
-        self._del_btn   = None
+        self._notif_on      = App.Preferences.favorites.get_notif_pref(ch.login)
+        self._tc            = None
+        self._ref_btn       = None
+        self._notif_btn     = None
+        self._del_btn       = None
         self._bell_viewer: ThemedIconViewer | None = None
         self.setFixedHeight(self.TH + 24)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self._build()
         self.update_state(ch)
 
-    # ── Pintar borde izquierdo de estado ──────────────────────────────────────
+    # ── Borde izquierdo de estado ─────────────────────────────────────────────
     def paintEvent(self, event):
         super().paintEvent(event)
         p = QtGui.QPainter(self)
         p.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
-        color = QtGui.QColor(_P["purple"] if self._is_live else _P["sep"])
-        p.setBrush(color)
+        p.setBrush(QtGui.QColor(_P["purple"] if self._is_live else _P["sep"]))
         p.setPen(QtCore.Qt.PenStyle.NoPen)
-        # Borde izquierdo de 3px con esquinas redondeadas
         p.drawRoundedRect(0, 6, 3, self.height() - 12, 2, 2)
         p.end()
 
     # ── Eventos ──────────────────────────────────────────────────────────────
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.MouseButton.LeftButton:
-            self.openInApp.emit(self._login)
+            self.openInBrowser.emit(self._login)
 
     def contextMenuEvent(self, ev):
         menu = QtWidgets.QMenu(self)
-        menu.addAction("▶  Abrir en TwitchLink",
-                       lambda: self.openInApp.emit(self._login))
         menu.addAction("🌐  Abrir en Twitch.tv",
                        lambda: self.openInBrowser.emit(self._login))
+        menu.addAction("▶  Buscar en TwitchLink",
+                       lambda: self.openInApp.emit(self._login))
         menu.addSeparator()
         menu.addAction("✕  Quitar de favoritos",
                        lambda: self.removeFav.emit(self._login))
@@ -246,7 +320,7 @@ class ChannelCard(QtWidgets.QWidget):
         root.setContentsMargins(8, 9, 4, 9)
         root.setSpacing(0)
 
-        # ── Thumbnail ─────────────────────────────────────────────────────
+        # Thumbnail
         tc = QtWidgets.QWidget()
         tc.setFixedSize(self.TW, self.TH)
         tc.setStyleSheet(f"background:{_P['bg']};border-radius:4px;")
@@ -260,22 +334,18 @@ class ChannelCard(QtWidgets.QWidget):
 
         self._overlay = QtWidgets.QLabel(tc)
         self._overlay.setFixedSize(self.TW, self.TH)
-        self._overlay.setStyleSheet(
-            "background:rgba(0,0,0,0.42);border-radius:4px;"
-        )
+        self._overlay.setStyleSheet("background:rgba(0,0,0,0.42);border-radius:4px;")
         self._overlay.hide()
 
-        # Badge Live/Offline sobre la thumbnail (abajo izquierda)
         self._thumb_badge = QtWidgets.QLabel(tc)
         self._thumb_badge.setStyleSheet(
-            f"background:{_P['badge_live']};color:#fff;"
+            "background:rgba(0,0,0,0.72);color:#fff;"
             "font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;"
         )
         self._thumb_badge.hide()
 
         self._uptime = _Uptime(tc)
 
-        # Refresh button (aparece al hover)
         self._ref_btn = QtWidgets.QToolButton(tc)
         self._ref_btn.setText("↺")
         self._ref_btn.setFixedSize(20, 20)
@@ -292,30 +362,26 @@ class ChannelCard(QtWidgets.QWidget):
         root.addWidget(tc)
         root.addSpacing(12)
 
-        # ── Info ──────────────────────────────────────────────────────────
+        # Info
         info_w = QtWidgets.QWidget()
         info_w.setStyleSheet("background:transparent;")
         info = QtWidgets.QVBoxLayout(info_w)
         info.setContentsMargins(0, 0, 4, 0)
         info.setSpacing(3)
 
-        # Fila 1: avatar + nombre + rol + viewers
         r1 = QtWidgets.QHBoxLayout()
-        r1.setSpacing(8)
-        r1.setContentsMargins(0, 0, 0, 0)
+        r1.setSpacing(8); r1.setContentsMargins(0, 0, 0, 0)
 
         self._avatar = QtWidgets.QLabel()
         self._avatar.setFixedSize(self.AV, self.AV)
         self._avatar.setPixmap(_avatar_ph(self.AV))
         self._avatar.setStyleSheet(
-            f"border-radius:{self.AV//2}px;"
-            f"border:2px solid {_P['sep']};"
+            f"border-radius:{self.AV//2}px;border:2px solid {_P['sep']};"
         )
         r1.addWidget(self._avatar, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         name_col = QtWidgets.QVBoxLayout()
-        name_col.setSpacing(1)
-        name_col.setContentsMargins(0, 0, 0, 0)
+        name_col.setSpacing(1); name_col.setContentsMargins(0, 0, 0, 0)
 
         name_row = QtWidgets.QHBoxLayout()
         name_row.setSpacing(5)
@@ -340,7 +406,6 @@ class ChannelCard(QtWidgets.QWidget):
         r1.addLayout(name_col, 1)
         info.addLayout(r1)
 
-        # Fila 2: título
         self._title = QtWidgets.QLabel()
         self._title.setStyleSheet(
             f"font-size:12px;color:{_P['text']};font-weight:500;"
@@ -349,12 +414,10 @@ class ChannelCard(QtWidgets.QWidget):
         self._title.setMaximumHeight(34)
         info.addWidget(self._title)
 
-        # Fila 3: juego / seguidores
         self._sub_info = QtWidgets.QLabel()
         self._sub_info.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
         info.addWidget(self._sub_info)
 
-        # Fila 4: partner pill (solo offline)
         self._partner_pill = QtWidgets.QLabel()
         self._partner_pill.setFixedHeight(18)
         self._partner_pill.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -364,7 +427,7 @@ class ChannelCard(QtWidgets.QWidget):
         info.addStretch()
         root.addWidget(info_w, 1)
 
-        # ── Acciones — botones nativos ────────────────────────────────────
+        # Acciones — botones nativos
         act_w = QtWidgets.QWidget()
         act_w.setFixedWidth(44)
         act_w.setStyleSheet("background:transparent;")
@@ -373,7 +436,19 @@ class ChannelCard(QtWidgets.QWidget):
         ac.setSpacing(4)
         ac.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter)
 
-        # Botón notificaciones — QPushButton nativo con ThemedIconViewer
+        # Abrir en TwitchLink (buscar canal en la app)
+        self._app_btn = QtWidgets.QPushButton()
+        self._app_btn.setFixedSize(28, 28)
+        self._app_btn.setFlat(True)
+        self._app_btn.setToolTip("Buscar en TwitchLink")
+        self._app_btn.setIconSize(QtCore.QSize(18, 18))
+        self._app_btn.clicked.connect(
+            lambda: self.openInApp.emit(self._login)
+        )
+        ThemedIconViewer(self._app_btn, Icons.LAUNCH)
+        ac.addWidget(self._app_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
+
+        # Notificaciones
         self._notif_btn = QtWidgets.QPushButton()
         self._notif_btn.setFixedSize(28, 28)
         self._notif_btn.setFlat(True)
@@ -387,7 +462,7 @@ class ChannelCard(QtWidgets.QWidget):
         self._update_notif_style()
         ac.addWidget(self._notif_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
 
-        # Botón eliminar — QPushButton nativo con Icons.TRASH
+        # Eliminar
         self._del_btn = QtWidgets.QPushButton()
         self._del_btn.setFixedSize(28, 28)
         self._del_btn.setFlat(True)
@@ -400,7 +475,6 @@ class ChannelCard(QtWidgets.QWidget):
         root.addWidget(act_w)
 
     def _update_notif_style(self):
-        """Aplica color de acento al botón de bell cuando está activo."""
         if self._notif_on:
             self._notif_btn.setStyleSheet(
                 f"QPushButton{{border-radius:5px;color:{_P['purple']};}}"
@@ -433,9 +507,8 @@ class ChannelCard(QtWidgets.QWidget):
         self._is_live = ch.is_live
         self._name.setText(ch.display_name)
         self.setStyleSheet(f"background:{_P['card']};border-radius:8px;")
-        self.update()  # repintar borde izquierdo
+        self.update()
 
-        # Role badge
         _PARTNER_BADGE = (
             "https://static-cdn.jtvnw.net/badges/v1/"
             "d12a2e27-16f6-41d0-ab77-b780518f00a3/1"
@@ -468,32 +541,21 @@ class ChannelCard(QtWidgets.QWidget):
         else:
             self._role_badge.hide()
 
-        # Avatar con borde de estado
         border_color = _P["purple"] if ch.is_live else _P["sep"]
         self._avatar.setStyleSheet(
-            f"border-radius:{self.AV//2}px;"
-            f"border:2px solid {border_color};"
+            f"border-radius:{self.AV//2}px;border:2px solid {border_color};"
         )
 
         if ch.is_live:
-            # Badge sobre thumbnail
             self._thumb_badge.setText("  🔴 Live  ")
-            self._thumb_badge.setStyleSheet(
-                "background:rgba(0,0,0,0.72);color:#fff;"
-                "font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;"
-            )
             self._thumb_badge.adjustSize()
             self._thumb_badge.show()
-
             self._overlay.hide()
 
-            # Viewers
             v = ch.viewers
             self._viewers.setText(f"👁  {v:,}" if v else "En vivo")
-            self._viewers.setStyleSheet(f"font-size:11px;color:{_P['dim']};")
             self._viewers.show()
 
-            # Título
             title = ch.stream_title or ""
             if len(title) > 80: title = title[:80] + "…"
             self._title.setText(title)
@@ -501,7 +563,6 @@ class ChannelCard(QtWidgets.QWidget):
                 f"font-size:12px;color:{_P['text']};font-weight:500;"
             )
 
-            # Juego
             game = ch.game_name
             if game:
                 self._sub_info.setText(f"🎮  {game}")
@@ -513,10 +574,8 @@ class ChannelCard(QtWidgets.QWidget):
             else:
                 self._sub_info.setText("")
             self._sub_info.show()
-
             self._partner_pill.hide()
 
-            # Uptime
             start = (
                 ch.stream.createdAt
                 if ch.stream and ch.stream.createdAt
@@ -524,9 +583,8 @@ class ChannelCard(QtWidgets.QWidget):
                 else None
             )
             self._uptime.set_start(start)
-            QtCore.QTimer.singleShot(50, self._fix_uptime_badge)
+            QtCore.QTimer.singleShot(50, self._fix_overlays)
 
-            # Thumbnail
             raw = ch.stream.previewImageURL if ch.stream else ""
             if raw:
                 ts  = int(_time.time()) // 60
@@ -536,16 +594,13 @@ class ChannelCard(QtWidgets.QWidget):
                 if url != self._last_url:
                     self._last_url = url
                     _load(self._thumb, url, self.TW, self.TH)
-
         else:
             self._thumb_badge.hide()
             self._overlay.show()
             self._uptime.stop()
             self._last_url = ""
-            self._viewers.setText("")
             self._viewers.hide()
 
-            # Desc offline
             desc = ""
             if ch.last_broadcast:
                 desc = getattr(ch.last_broadcast, "title", "") or ""
@@ -585,14 +640,16 @@ class ChannelCard(QtWidgets.QWidget):
         if ch.profile_image_url:
             _load(self._avatar, ch.profile_image_url, self.AV, self.AV, circle=True)
 
-    def _fix_uptime_badge(self):
-        """Posiciona uptime (abajo izquierda) y badge Live (abajo derecha) en la thumbnail."""
+    def _fix_overlays(self):
         self._uptime.adjustSize()
         self._uptime.move(4, self.TH - self._uptime.height() - 3)
         if self._thumb_badge.isVisible():
             self._thumb_badge.adjustSize()
             bw = self._thumb_badge.width()
-            self._thumb_badge.move(self.TW - bw - 4, self.TH - self._thumb_badge.height() - 3)
+            self._thumb_badge.move(
+                self.TW - bw - 4,
+                self.TH - self._thumb_badge.height() - 3
+            )
 
     def _force_refresh(self):
         base = self._last_url.split("?")[0]
@@ -695,17 +752,43 @@ class FavoritesPage(QtWidgets.QWidget):
         self._mgr      = manager
         self._page_obj = page_object
         self._cards: dict[str, ChannelCard] = {}
+
+        # ── FIX: timer de desbote para colapsar rebuilds rápidos en uno solo ──
+        # Durante el inicio se emiten señales por cada canal (N canales = N
+        # rebuilds). El timer agrupa todas esas peticiones en un único repintado
+        # al final del ciclo de eventos actual.
+        self._rebuild_timer = QtCore.QTimer(self)
+        self._rebuild_timer.setSingleShot(True)
+        self._rebuild_timer.setInterval(0)          # próximo ciclo de eventos
+        self._rebuild_timer.timeout.connect(self._do_rebuild)
+
         self._build()
         self._setup_sidebar_badge()
         self._connect()
         self._reload_all()
+        # FIX: forzar rebuild síncrono aquí para que cuando el widget se muestre
+        # por primera vez el layout ya esté construido. Sin esto, hay un frame
+        # donde las cards existen pero no están posicionadas (aparecen en 0,0).
+        self._rebuild_timer.stop()
+        self._do_rebuild()
+
+    # ── Petición de rebuild debounced ─────────────────────────────────────────
+    def _schedule_rebuild(self) -> None:
+        """Programa un rebuild diferido; si ya hay uno pendiente, lo ignora."""
+        if not self._rebuild_timer.isActive():
+            self._rebuild_timer.start()
+
+    def _do_rebuild(self) -> None:
+        """Ejecuta el rebuild real con repintado suspendido para evitar flash."""
+        self._rebuild_layout()
+        self._update_empty()
 
     def _build(self):
         root = QtWidgets.QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
         self.setStyleSheet(f"background:{_P['bg']};")
 
-        # ── Header ────────────────────────────────────────────────────────
+        # Header
         hdr = QtWidgets.QWidget()
         hdr.setFixedHeight(46)
         hdr.setStyleSheet(
@@ -719,17 +802,6 @@ class FavoritesPage(QtWidgets.QWidget):
             f"font-size:15px;font-weight:700;color:{_P['text']};"
         )
         hl.addWidget(title_lbl)
-
-        self._live_badge = QtWidgets.QLabel()
-        self._live_badge.setFixedHeight(20)
-        self._live_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self._live_badge.setStyleSheet(
-            f"background:{_P['purple']};color:#fff;"
-            "border-radius:10px;font-size:10px;font-weight:700;padding:0 9px;"
-        )
-        self._live_badge.setVisible(False)
-        hl.addWidget(self._live_badge, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
-
         hl.addStretch()
 
         self._spin = QtWidgets.QLabel("")
@@ -754,12 +826,10 @@ class FavoritesPage(QtWidgets.QWidget):
             )
             btn.clicked.connect(slot)
             hl.addWidget(btn)
-            if icon == "＋":
-                self._add_btn = btn
 
         root.addWidget(hdr)
 
-        # ── Lista scrollable ──────────────────────────────────────────────
+        # Lista scrollable
         self._scroll = QtWidgets.QScrollArea()
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
@@ -777,7 +847,12 @@ class FavoritesPage(QtWidgets.QWidget):
         self._scroll.setWidget(self._list_w)
         root.addWidget(self._scroll, 1)
 
-        # ── Placeholder vacío ─────────────────────────────────────────────
+        # Sección headers — se insertan/remueven en _rebuild_layout
+        self._hdr_live    = _SectionHeader("EN VIVO",  live=True,  collapsible=False, parent=self._list_w)
+        self._hdr_offline = _SectionHeader("OFFLINE",  live=False, collapsible=True,  parent=self._list_w)
+        self._hdr_offline.toggled.connect(self._on_offline_toggled)
+
+        # Placeholder vacío
         self._empty = QtWidgets.QWidget()
         self._empty.setStyleSheet(f"background:{_P['bg']};")
         el = QtWidgets.QVBoxLayout(self._empty)
@@ -797,8 +872,7 @@ class FavoritesPage(QtWidgets.QWidget):
         be.setFixedHeight(34)
         be.setStyleSheet(
             f"QPushButton{{background:{_P['purple']};color:#fff;"
-            "border:none;border-radius:8px;font-size:12px;"
-            "padding:0 24px;margin-top:8px;}}"
+            "border:none;border-radius:8px;font-size:12px;padding:0 24px;margin-top:8px;}}"
             f"QPushButton:hover{{background:{_P['purple_d']};}}"
         )
         be.clicked.connect(self._on_add)
@@ -810,9 +884,8 @@ class FavoritesPage(QtWidgets.QWidget):
         self._sidebar_live_badge = QtWidgets.QLabel(btn)
         self._sidebar_live_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._sidebar_live_badge.setStyleSheet(
-            "background:#e91916;color:#fff;"
-            "border-radius:7px;font-size:8px;font-weight:700;"
-            "border:1px solid rgba(0,0,0,0.25);"
+            "background:#e91916;color:#fff;border-radius:7px;"
+            "font-size:8px;font-weight:700;border:1px solid rgba(0,0,0,0.25);"
         )
         self._sidebar_live_badge.hide()
         QtCore.QTimer.singleShot(200, self._reposition_sidebar_badge)
@@ -823,7 +896,7 @@ class FavoritesPage(QtWidgets.QWidget):
         if bw == 0:
             QtCore.QTimer.singleShot(100, self._reposition_sidebar_badge)
             return
-        badge = self._sidebar_live_badge
+        badge   = self._sidebar_live_badge
         badge_w = badge.width() if badge.width() > 0 else 14
         badge.move(bw - badge_w - 2, 3)
 
@@ -838,6 +911,81 @@ class FavoritesPage(QtWidgets.QWidget):
         m.pollStarted.connect(self._on_poll_start)
         m.pollFinished.connect(lambda: self._spin.setText(""))
 
+    # ── Reconstrucción del layout con secciones ───────────────────────────────
+    def _rebuild_layout(self):
+        """Reordena todos los widgets en el layout respetando secciones.
+
+        FIX: Se suspende el repintado del widget contenedor durante toda la
+        operación. Sin esto, cada llamada a setParent(None) + addWidget()
+        produce un frame intermedio visible → parpadeo.
+
+        FIX 2: setUpdatesEnabled en _list_w NO protege a los widgets hijo:
+        cada hijo se sigue pintando por su cuenta. Por eso ahora ocultamos
+        cada widget ANTES de llamar setParent(None) — sin eso, al volverse
+        ventana de nivel superior durante un instante, se pinta solo y parpadea.
+        set_count() también se llama DESPUÉS de addWidget, no antes, porque
+        setVisible(True) sobre un widget sin padre lo mostraría suelto.
+        """
+        # ── Suspender repintado para evitar frames intermedios ────────────────
+        self._list_w.setUpdatesEnabled(False)
+        try:
+            lay = self._list_l
+
+            # Sacar todos los widgets del layout sin destruirlos.
+            # IMPORTANTE: ocultamos cada widget ANTES de quitarle el padre.
+            # Sin hide(), setParent(None) lo convierte en ventana flotante
+            # visible un instante → parpadeo aunque _list_w tenga updates off.
+            while lay.count() > 0:
+                item = lay.takeAt(0)
+                if item.widget():
+                    w = item.widget()
+                    w.hide()          # FIX: sin esto aparece como ventana suelta
+                    w.setParent(None)
+
+            channels    = self._mgr.channels()
+            live_logins = [ch.login for ch in channels if ch.is_live]
+            off_logins  = [ch.login for ch in channels if not ch.is_live]
+
+            # Sección EN VIVO
+            if live_logins:
+                self._hdr_live.setParent(self._list_w)
+                lay.addWidget(self._hdr_live)
+                self._hdr_live.set_count(len(live_logins))  # FIX: después de addWidget
+                for login in live_logins:
+                    card = self._cards.get(login)
+                    if card:
+                        card.setParent(self._list_w)
+                        lay.addWidget(card)
+                        card.show()   # FIX: mostrar explícitamente tras addWidget
+            else:
+                self._hdr_live.set_count(0)  # solo actualiza el texto/oculta
+
+            # Sección OFFLINE
+            if off_logins:
+                self._hdr_offline.setParent(self._list_w)
+                lay.addWidget(self._hdr_offline)
+                self._hdr_offline.set_count(len(off_logins))  # FIX: después de addWidget
+                if not self._hdr_offline.is_collapsed():
+                    for login in off_logins:
+                        card = self._cards.get(login)
+                        if card:
+                            card.setParent(self._list_w)
+                            lay.addWidget(card)
+                            card.show()   # FIX: mostrar explícitamente tras addWidget
+            else:
+                self._hdr_offline.set_count(0)  # solo actualiza el texto/oculta
+
+            lay.addStretch()
+        finally:
+            # Siempre reactivar el repintado, incluso si algo falla
+            self._list_w.setUpdatesEnabled(True)
+
+    # ── Toggle colapso offline ────────────────────────────────────────────────
+    def _on_offline_toggled(self, collapsed: bool):
+        """Muestra u oculta las tarjetas offline sin perder su estado."""
+        self._schedule_rebuild()
+
+    # ── Slots ─────────────────────────────────────────────────────────────────
     def _on_add(self):
         d = _AddDialog(self); d.confirmed.connect(self._mgr.add); d.exec()
 
@@ -851,31 +999,41 @@ class FavoritesPage(QtWidgets.QWidget):
         menu.exec(QtGui.QCursor.pos())
 
     def _on_added(self, ch):
-        self._add_card(ch); self._reload_order(); self._update_empty()
+        if ch.login not in self._cards:
+            card = ChannelCard(ch, self._list_w)
+            card.hide()                                     # FIX: evita aparición en (0,0) antes del layout
+            card.openInApp.connect(self.openChannelRequested)
+            card.openInBrowser.connect(self.openBrowserRequested)
+            card.removeFav.connect(self._mgr.remove)
+            self._cards[ch.login] = card
+        # FIX: en vez de reconstruir inmediatamente, diferimos con el timer.
+        # Si llegan 21 channelAdded seguidos, sólo se hace UN rebuild al final.
+        self._schedule_rebuild()
+        self._update_empty()
 
     def _on_removed(self, login):
         card = self._cards.pop(login, None)
         if card:
-            self._list_l.removeWidget(card); card.deleteLater()
+            card.deleteLater()
+        self._schedule_rebuild()
         self._update_empty()
 
     def _on_updated(self, ch):
         card = self._cards.get(ch.login)
-        if card: card.update_state(ch)
-        if self._mgr.sort_criteria() in (
-            SortCriteria.STATUS_THEN_VIEWERS, SortCriteria.VIEWERS_DESC
-        ):
-            self._reload_order()
+        if card:
+            was_live = card._is_live
+            card.update_state(ch)
+            # Si cambió el estado live/offline → reordenar secciones
+            if was_live != ch.is_live:
+                self._schedule_rebuild()
+            elif self._mgr.sort_criteria() in (
+                SortCriteria.STATUS_THEN_VIEWERS, SortCriteria.VIEWERS_DESC
+            ):
+                self._schedule_rebuild()
 
     def _on_live_count(self, count):
         if count:
-            self._live_badge.setText(f"  🔴  {count} en vivo  ")
-            self._live_badge.setVisible(True)
-        else:
-            self._live_badge.setVisible(False)
-
-        if count:
-            txt = str(count) if count < 100 else "99+"
+            txt     = str(count) if count < 100 else "99+"
             badge_w = max(14, len(txt) * 6 + 6)
             self._sidebar_live_badge.setFixedSize(badge_w, 14)
             self._sidebar_live_badge.setText(txt)
@@ -903,27 +1061,20 @@ class FavoritesPage(QtWidgets.QWidget):
 
     def _reload_all(self):
         for card in list(self._cards.values()):
-            self._list_l.removeWidget(card); card.setParent(None)
+            card.deleteLater()
         self._cards.clear()
         for ch in self._mgr.channels():
-            self._add_card(ch)
+            card = ChannelCard(ch, self._list_w)
+            card.hide()                                     # FIX: evita aparición en (0,0) antes del layout
+            card.openInApp.connect(self.openChannelRequested)
+            card.openInBrowser.connect(self.openBrowserRequested)
+            card.removeFav.connect(self._mgr.remove)
+            self._cards[ch.login] = card
+        # FIX: diferimos el rebuild para que si _reload_all se llama varias
+        # veces seguidas (sortCriteriaChanged + listReordered simultáneos)
+        # sólo se ejecute una vez.
+        self._schedule_rebuild()
         self._update_empty()
-
-    def _add_card(self, ch):
-        if ch.login in self._cards: return
-        card = ChannelCard(ch, self._list_w)
-        card.openInApp.connect(self.openChannelRequested)
-        card.openInBrowser.connect(self.openBrowserRequested)
-        card.removeFav.connect(self._mgr.remove)
-        self._cards[ch.login] = card
-        self._list_l.insertWidget(self._list_l.count()-1, card)
-
-    def _reload_order(self):
-        for i, ch in enumerate(self._mgr.channels()):
-            card = self._cards.get(ch.login)
-            if card:
-                self._list_l.removeWidget(card)
-                self._list_l.insertWidget(i, card)
 
     def _update_empty(self):
         has = bool(self._cards)

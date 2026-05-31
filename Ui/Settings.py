@@ -62,6 +62,31 @@ class Settings(QtWidgets.QWidget):
         self._ui.searchExternalContent.toggled.connect(App.Preferences.advanced.setSearchExternalContentEnabled)
         self._ui.searchExternalContentInfo.clicked.connect(self.showSearchExternalContentInfo)
         Utils.setIconViewer(self._ui.searchExternalContentInfo, Icons.HELP)
+
+        # ── Post-process command group ─────────────────────────────────────────
+        # Inserted programmatically into the General tab (same parent as bookmarkArea)
+        hookGroup = QtWidgets.QGroupBox(T("Post-process command"), parent=self)
+        hookLayout = QtWidgets.QVBoxLayout(hookGroup)
+
+        hookInfo = QtWidgets.QLabel(
+            T("#Command executed after each successful download.\n"
+              "Variables: {file}  {directory}  {filename}  {title}  {channel}  {type}"),
+            parent=hookGroup,
+        )
+        hookInfo.setWordWrap(True)
+        hookInfo.setStyleSheet("color: gray; font-size: 11px;")
+        hookLayout.addWidget(hookInfo)
+
+        self._hookEdit = QtWidgets.QLineEdit(parent=hookGroup)
+        self._hookEdit.setPlaceholderText('echo "Done: {file}"')
+        self._hookEdit.setText(App.Preferences.general.getPostProcessCommand())
+        self._hookEdit.editingFinished.connect(self._savePostProcessCommand)
+        hookLayout.addWidget(self._hookEdit)
+
+        # Insert at the bottom of whichever tab contains bookmarkArea
+        generalTab = self._ui.bookmarkArea.parent()
+        generalTab.layout().addWidget(hookGroup)
+        # ─────────────────────────────────────────────────────────────────────
         for translationPack in App.Translator.getTranslationPacks():
             self._ui.language.addItem(translationPack.getDisplayName(), userData=translationPack.getId())
         self._ui.language.setCurrentIndex(self._ui.language.findData(App.Translator.getCurrentTranslationPackId()))
@@ -79,7 +104,7 @@ class Settings(QtWidgets.QWidget):
 
         # ── Retry settings group (inserted after downloadSpeedArea) ───────────
         from AppData.Preferences import Download as DownloadPrefs
-        retryGroup = QtWidgets.QGroupBox(T("#Retry on error"), parent=self)
+        retryGroup = QtWidgets.QGroupBox(T("Retry on error"), parent=self)
         retryForm  = QtWidgets.QFormLayout(retryGroup)
         retryForm.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 
@@ -104,10 +129,10 @@ class Settings(QtWidgets.QWidget):
         dlLayout.insertWidget(speedIdx + 1, retryGroup)
 
         # ── Speed limit group ─────────────────────────────────────────────────
-        speedLimitGroup = QtWidgets.QGroupBox(T("#Bandwidth limit"), parent=self)
+        speedLimitGroup = QtWidgets.QGroupBox(T("Bandwidth limit"), parent=self)
         speedLimitLayout = QtWidgets.QVBoxLayout(speedLimitGroup)
 
-        self._speedLimitCheck = QtWidgets.QCheckBox(T("#Limit download speed"), parent=speedLimitGroup)
+        self._speedLimitCheck = QtWidgets.QCheckBox(T("Limit download speed"), parent=speedLimitGroup)
         currentLimit = App.FileDownloadManager.getSpeedLimit()
         self._speedLimitCheck.setChecked(currentLimit > 0)
         self._speedLimitCheck.toggled.connect(self._onSpeedLimitToggled)
@@ -130,11 +155,11 @@ class Settings(QtWidgets.QWidget):
         self.reloadBookmarkArea()
 
         # ── Backup & Restore group (inserted programmatically before resetArea) ─
-        self._backupGroup = QtWidgets.QGroupBox(T("#Backup & Restore"), parent=self)
+        self._backupGroup = QtWidgets.QGroupBox(T("Backup & Restore"), parent=self)
         backupLayout = QtWidgets.QVBoxLayout(self._backupGroup)
 
         exportBtn = QtWidgets.QToolButton(parent=self._backupGroup)
-        exportBtn.setText(T("#Export Settings…"))
+        exportBtn.setText(T("Export Settings…"))
         exportBtn.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Preferred,
             QtWidgets.QSizePolicy.Policy.Preferred,
@@ -145,7 +170,7 @@ class Settings(QtWidgets.QWidget):
         backupLayout.addWidget(exportBtn)
 
         importBtn = QtWidgets.QToolButton(parent=self._backupGroup)
-        importBtn.setText(T("#Import Settings…"))
+        importBtn.setText(T("Import Settings…"))
         importBtn.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Preferred,
             QtWidgets.QSizePolicy.Policy.Preferred,
@@ -198,6 +223,8 @@ class Settings(QtWidgets.QWidget):
             self._speedLimitSpin.blockSignals(True)
             self._speedLimitSpin.setValue(currentLimit // 1024)
             self._speedLimitSpin.blockSignals(False)
+        # Sync post-process command
+        self._hookEdit.setText(App.Preferences.general.getPostProcessCommand())
 
     def windowCloseChanged(self, index: int) -> None:
         App.Preferences.general.setSystemTrayEnabled(False if index == 0 else True)
@@ -282,6 +309,9 @@ class Settings(QtWidgets.QWidget):
         if self._speedLimitCheck.isChecked():
             App.FileDownloadManager.setSpeedLimit(kbps * 1024)
 
+    def _savePostProcessCommand(self) -> None:
+        App.Preferences.general.setPostProcessCommand(self._hookEdit.text())
+
     def resetSettings(self) -> None:
         if Utils.ask("warning", "#This will reset all settings.\nProceed?", parent=self):
             App.Preferences.reset()
@@ -302,9 +332,9 @@ class Settings(QtWidgets.QWidget):
             return
         try:
             shutil.copy2(Config.APPDATA_FILE, filePath)
-            Utils.info("export-ok", "#Settings exported successfully.", parent=self)
+            Utils.info("export-ok", "Settings exported successfully.", parent=self)
         except Exception as e:
-            Utils.info("export-error", f"#Export failed:\n{e}", parent=self)
+            Utils.info("export-error", f"Export failed:\n{e}", parent=self)
 
     def importSettings(self) -> None:
         """Load settings from a user-chosen JSON file and apply them live."""
@@ -331,7 +361,7 @@ class Settings(QtWidgets.QWidget):
                 )
                 return
         except Exception:
-            Utils.info("import-error", "#Could not read the selected file.", parent=self)
+            Utils.info("import-error", "Could not read the selected file.", parent=self)
             return
 
         if not Utils.ask(
@@ -351,7 +381,7 @@ class Settings(QtWidgets.QWidget):
             )
             self.requestRestart()
         except Exception as e:
-            Utils.info("import-error", f"#Import failed:\n{e}", parent=self)
+            Utils.info("import-error", f"Import failed:\n{e}", parent=self)
 
     def requestRestart(self) -> None:
         self.restartRequired.emit()

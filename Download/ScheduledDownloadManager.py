@@ -107,6 +107,7 @@ class ScheduledDownload(QtCore.QObject):
         self._autoUpdateTimer.timeout.connect(self.updateChannelData)
         self.downloader: StreamDownloader | None = None
         self.status = ScheduledDownloadStatus(parent=self)
+        self._recordingCount: int = 0   # incremented each time a download starts
         self.updateChannelData()
 
     def getId(self) -> uuid.UUID:
@@ -274,7 +275,44 @@ class ScheduledDownload(QtCore.QObject):
 
     def startDownloadIfOnline(self) -> None:
         if self.canStartDownload():
-            self.generateStreamPlayback()
+            condResult = self._matchesConditions()
+            if condResult is True:
+                self.generateStreamPlayback()
+            else:
+                # Conditions not met — log the reason but stay subscribed
+                self.logger.info(f"[ScheduledDownload] Conditions not met: {condResult}")
+
+    def _matchesConditions(self) -> bool | str:
+        """
+        Check user-configured recording conditions against the live stream.
+
+        Returns True if all conditions pass, or a human-readable reason string
+        if any condition fails.
+        """
+        stream = self.channel.stream if self.isChannelRetrieved() else None
+        if stream is None:
+            return "stream data unavailable"
+
+        # Game filter
+        gameFilter = self.preset.getGameFilter()
+        if gameFilter:
+            gameName = (stream.game.name if stream.game else "").lower()
+            if gameFilter.lower() not in gameName:
+                return f"game '{stream.game.name if stream.game else ''}' does not match filter '{gameFilter}'"
+
+        # Title filter
+        titleFilter = self.preset.getTitleFilter()
+        if titleFilter:
+            title = (stream.title or "").lower()
+            if titleFilter.lower() not in title:
+                return f"title '{stream.title}' does not match filter '{titleFilter}'"
+
+        # Max recordings
+        maxRec = self.preset.getMaxRecordings()
+        if maxRec > 0 and self._recordingCount >= maxRec:
+            return f"max recordings ({maxRec}) reached"
+
+        return True
 
     def generateStreamPlayback(self) -> None:
         try:
@@ -313,6 +351,7 @@ class ScheduledDownload(QtCore.QObject):
         if not playback.token.hideAds:
             downloadInfo.setSkipAdsEnabled(self.preset.isSkipAdsEnabled())
         downloadInfo.setRemuxEnabled(self.preset.isRemuxEnabled())
+        self._recordingCount += 1
         self.downloader = TwitchDownloader.create(downloadInfo, parent=self)
         self.downloader.finished.connect(self.downloadResultHandler)
         self.downloaderCreated.emit(self, self.downloader)
