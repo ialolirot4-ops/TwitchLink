@@ -61,18 +61,14 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
         self.downloads.systemShutdownRequested.connect(self.shutdownSystem)
         self._ui.downloadsPage.layout().addWidget(self.downloads)
 
-        # ── Batch Download button — inserted at top of downloads page ─────────
+        # ── Batch Download button — corner widget inside the Downloads tab bar ─
         batchBtn = QtWidgets.QToolButton(parent=self)
         batchBtn.setText(T("#Batch Download…"))
         batchBtn.setToolTip(T("#Queue multiple downloads from a URL list"))
         batchBtn.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
         batchBtn.setMinimumHeight(28)
         batchBtn.clicked.connect(self.openBatchDownload)
-        batchRow = QtWidgets.QHBoxLayout()
-        batchRow.setContentsMargins(8, 4, 8, 0)
-        batchRow.addStretch()
-        batchRow.addWidget(batchBtn)
-        self._ui.downloadsPage.layout().insertLayout(0, batchRow)
+        self.downloads.setCornerWidget(batchBtn, QtCore.Qt.Corner.TopRightCorner)
         # ──────────────────────────────────────────────────────────────────────
         self.scheduledDownloads = ScheduledDownloadsPage(self.scheduledDownloadsPageObject, parent=self)
         self._ui.scheduledDownloadsPage.layout().addWidget(self.scheduledDownloads)
@@ -332,71 +328,211 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
         Muestra un diálogo preguntando qué hacer al cerrar.
         Devuelve: 'tray' | 'exit' | 'cancel'
         """
+        from Core import App as _App
+        pal  = _App.Instance.palette()
+        R    = QtGui.QPalette.ColorRole
+        G    = QtGui.QPalette.ColorGroup
+        win  = pal.color(G.Active, R.Window)
+        is_dark = win.lightness() < 128
+
+        PURPLE   = "#9147ff"
+        PURPLE_D = "#7b3fe4"
+        RED      = "#e84040"
+        RED_D    = "#c0392b"
+        BG       = win.name()
+        base     = pal.color(G.Active, R.Base)
+        d = 12 if is_dark else -8
+        CARD  = QtGui.QColor(
+            max(0, min(255, base.red()   + d)),
+            max(0, min(255, base.green() + d)),
+            max(0, min(255, base.blue()  + d)),
+        ).name()
+        CARD_H = QtGui.QColor(
+            max(0, min(255, base.red()   + d * 2)),
+            max(0, min(255, base.green() + d * 2)),
+            max(0, min(255, base.blue()  + d * 2)),
+        ).name()
+        SEP  = pal.color(G.Active, R.Mid).name()
+        TEXT = pal.color(G.Active, R.WindowText).name()
+        DIM  = f"rgba({pal.color(G.Active, R.WindowText).red()}," \
+               f"{pal.color(G.Active, R.WindowText).green()}," \
+               f"{pal.color(G.Active, R.WindowText).blue()},0.55)"
+
         dlg = QtWidgets.QDialog(self)
-        dlg.setWindowTitle(T("exit") if hasattr(dlg, "setWindowTitle") else "Cerrar")
-        dlg.setFixedWidth(340)
+        dlg.setWindowTitle("Exit")
+        dlg.setFixedWidth(360)
         dlg.setWindowFlags(
-            dlg.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
+            QtCore.Qt.WindowType.Dialog |
+            QtCore.Qt.WindowType.FramelessWindowHint
         )
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        lay = QtWidgets.QVBoxLayout(dlg)
-        lay.setContentsMargins(20, 18, 20, 14)
-        lay.setSpacing(14)
+        # ── Outer shadow card ────────────────────────────────────────────────
+        outer = QtWidgets.QVBoxLayout(dlg)
+        outer.setContentsMargins(12, 12, 12, 12)
 
-        lbl = QtWidgets.QLabel(f"¿Qué deseas hacer con {Config.APP_NAME}?")
-        lbl.setWordWrap(True)
-        lbl.setStyleSheet("font-size:13px;font-weight:600;")
-        lay.addWidget(lbl)
+        card = QtWidgets.QWidget()
+        card.setObjectName("exitCard")
+        card.setStyleSheet(
+            f"#exitCard{{background:{BG};border-radius:14px;"
+            f"border:1px solid {SEP};}}"
+        )
+        shadow = QtWidgets.QGraphicsDropShadowEffect(card)
+        shadow.setBlurRadius(32)
+        shadow.setOffset(0, 6)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        card.setGraphicsEffect(shadow)
+
+        outer.addWidget(card)
+
+        root = QtWidgets.QVBoxLayout(card)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # ── Header ───────────────────────────────────────────────────────────
+        hdr = QtWidgets.QWidget()
+        hdr.setStyleSheet(
+            f"background:{PURPLE};border-top-left-radius:13px;"
+            "border-top-right-radius:13px;"
+        )
+        hdr.setFixedHeight(52)
+        hdr_lay = QtWidgets.QHBoxLayout(hdr)
+        hdr_lay.setContentsMargins(18, 0, 14, 0)
+
+        hdr_icon = QtWidgets.QLabel("⏻")
+        hdr_icon.setStyleSheet("font-size:22px;color:#fff;background:transparent;")
+        hdr_lay.addWidget(hdr_icon)
+
+        hdr_lay.addSpacing(10)
+        hdr_title = QtWidgets.QLabel(f"Salir de {Config.APP_NAME}")
+        hdr_title.setStyleSheet(
+            "font-size:14px;font-weight:700;color:#fff;background:transparent;"
+        )
+        hdr_lay.addWidget(hdr_title, 1)
+
+        btn_x = QtWidgets.QToolButton()
+        btn_x.setText("✕")
+        btn_x.setFixedSize(28, 28)
+        btn_x.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        btn_x.setStyleSheet(
+            "QToolButton{background:rgba(255,255,255,0.15);color:#fff;"
+            "border:none;border-radius:6px;font-size:13px;font-weight:700;}"
+            "QToolButton:hover{background:rgba(255,255,255,0.30);}"
+        )
+        btn_x.clicked.connect(dlg.reject)
+        hdr_lay.addWidget(btn_x)
+
+        root.addWidget(hdr)
+
+        # ── Body ─────────────────────────────────────────────────────────────
+        body = QtWidgets.QWidget()
+        body.setStyleSheet("background:transparent;")
+        body_lay = QtWidgets.QVBoxLayout(body)
+        body_lay.setContentsMargins(16, 18, 16, 18)
+        body_lay.setSpacing(10)
 
         result = ["cancel"]
 
-        btn_tray = QtWidgets.QPushButton("  🔽  Minimizar al system tray")
-        btn_tray.setMinimumHeight(36)
-        btn_tray.setStyleSheet(
-            "QPushButton{border:1px solid palette(mid);border-radius:6px;"
-            "font-size:12px;text-align:left;padding:0 12px;}"
-            "QPushButton:hover{background:palette(highlight);color:palette(highlighted-text);}"
+        def _option(icon, label, desc, hover_color, val):
+            btn = QtWidgets.QPushButton()
+            btn.setFixedHeight(62)
+            btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+            btn.setStyleSheet(
+                f"QPushButton{{background:{CARD};border:1px solid {SEP};"
+                "border-radius:10px;text-align:left;padding:0 14px;}"
+                f"QPushButton:hover{{background:{hover_color};border-color:{hover_color};}}"
+            )
+
+            lay = QtWidgets.QHBoxLayout(btn)
+            lay.setContentsMargins(14, 0, 14, 0)
+            lay.setSpacing(14)
+
+            ico_lbl = QtWidgets.QLabel(icon)
+            ico_lbl.setFixedSize(36, 36)
+            ico_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            ico_lbl.setStyleSheet(
+                f"font-size:18px;background:rgba(128,128,128,0.12);"
+                "border-radius:8px;"
+            )
+            ico_lbl.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            lay.addWidget(ico_lbl)
+
+            txt_col = QtWidgets.QVBoxLayout()
+            txt_col.setSpacing(2)
+            txt_col.setContentsMargins(0, 0, 0, 0)
+
+            lbl_main = QtWidgets.QLabel(label)
+            lbl_main.setStyleSheet(
+                f"font-size:12px;font-weight:600;color:{TEXT};background:transparent;"
+            )
+            lbl_main.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+            lbl_sub = QtWidgets.QLabel(desc)
+            lbl_sub.setStyleSheet(
+                f"font-size:10px;color:{DIM};background:transparent;"
+            )
+            lbl_sub.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+            txt_col.addWidget(lbl_main)
+            txt_col.addWidget(lbl_sub)
+            lay.addLayout(txt_col, 1)
+
+            arrow = QtWidgets.QLabel("›")
+            arrow.setStyleSheet(
+                f"font-size:20px;color:{DIM};background:transparent;"
+            )
+            arrow.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            lay.addWidget(arrow)
+
+            def _handler():
+                result[0] = val
+                dlg.accept()
+
+            btn.clicked.connect(_handler)
+            return btn
+
+        btn_tray = _option(
+            "󰆦" if False else "⊟",
+            "Minimizar al system tray",
+            "La aplicación seguirá corriendo en segundo plano.",
+            PURPLE,
+            "tray",
         )
-        sub_tray = QtWidgets.QLabel(
-            "La aplicación seguirá corriendo en segundo plano."
+        btn_exit = _option(
+            "⏻",
+            "Cerrar completamente",
+            "Detiene todos los procesos y cierra la app.",
+            RED_D,
+            "exit",
         )
-        sub_tray.setStyleSheet("font-size:10px;color:palette(mid);margin-left:2px;")
 
-        btn_exit = QtWidgets.QPushButton("  ✕  Cerrar completamente")
-        btn_exit.setMinimumHeight(36)
-        btn_exit.setStyleSheet(
-            "QPushButton{border:1px solid palette(mid);border-radius:6px;"
-            "font-size:12px;text-align:left;padding:0 12px;}"
-            "QPushButton:hover{background:#c0392b;color:#fff;}"
-        )
-        sub_exit = QtWidgets.QLabel("Detiene todos los procesos y cierra la app.")
-        sub_exit.setStyleSheet("font-size:10px;color:palette(mid);margin-left:2px;")
+        body_lay.addWidget(btn_tray)
+        body_lay.addWidget(btn_exit)
 
-        for btn, sub, val in [
-            (btn_tray, sub_tray, "tray"),
-            (btn_exit, sub_exit, "exit"),
-        ]:
-            grp = QtWidgets.QVBoxLayout()
-            grp.setSpacing(2)
-            grp.addWidget(btn)
-            grp.addWidget(sub)
-            lay.addLayout(grp)
-
-            def _make_handler(_val, _dlg):
-                def _handler():
-                    result[0] = _val
-                    _dlg.accept()
-                return _handler
-
-            btn.clicked.connect(_make_handler(val, dlg))
+        # ── Footer ───────────────────────────────────────────────────────────
+        sep = QtWidgets.QFrame()
+        sep.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        sep.setStyleSheet(f"color:{SEP};")
+        body_lay.addSpacing(4)
+        body_lay.addWidget(sep)
+        body_lay.addSpacing(2)
 
         cancel_row = QtWidgets.QHBoxLayout()
         cancel_row.addStretch()
         btn_cancel = QtWidgets.QPushButton("Cancelar")
-        btn_cancel.setFixedHeight(28)
+        btn_cancel.setFixedHeight(32)
+        btn_cancel.setFixedWidth(90)
+        btn_cancel.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        btn_cancel.setStyleSheet(
+            f"QPushButton{{border:1px solid {SEP};border-radius:7px;"
+            f"font-size:12px;color:{TEXT};background:transparent;}}"
+            f"QPushButton:hover{{background:{CARD_H};}}"
+        )
         btn_cancel.clicked.connect(dlg.reject)
         cancel_row.addWidget(btn_cancel)
-        lay.addLayout(cancel_row)
+        body_lay.addLayout(cancel_row)
+
+        root.addWidget(body)
 
         dlg.exec()
         return result[0]
