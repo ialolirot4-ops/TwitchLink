@@ -1,9 +1,12 @@
 __pycache__/
+Backup/
 
+.zip
+StartTwitchLink.vbs
 venv/
 .venv/
 
 .idea/
 .vscode/
-
+TwitchLink.ink
 .DS_Store

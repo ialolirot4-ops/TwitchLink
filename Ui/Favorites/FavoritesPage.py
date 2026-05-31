@@ -145,22 +145,15 @@ class _SectionHeader(QtWidgets.QWidget):
     """
     Separador visual entre secciones EN VIVO / OFFLINE.
     Muestra un punto de color, el label, una línea separadora y el contador.
-    Si collapsible=True, al hacer clic colapsa/expande la sección.
     """
-    toggled = QtCore.pyqtSignal(bool)   # True = collapsed
-
-    def __init__(self, label: str, live: bool, collapsible: bool = False, parent=None):
+    def __init__(self, label: str, live: bool, parent=None):
         super().__init__(parent=parent)
         if not _P:
             _build_palette()
-        self._live        = live
-        self._count       = 0
-        self._collapsible = collapsible
-        self._collapsed   = False
+        self._live  = live
+        self._count = 0
         self.setFixedHeight(32)
         self.setStyleSheet("background:transparent;")
-        if collapsible:
-            self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(12, 0, 16, 0)
@@ -193,24 +186,6 @@ class _SectionHeader(QtWidgets.QWidget):
                                      QtCore.Qt.AlignmentFlag.AlignVCenter)
         self._count_lbl.setStyleSheet(f"font-size:10px;color:{_P['mute']};")
         lay.addWidget(self._count_lbl)
-
-        # Flecha de colapso (solo si collapsible)
-        if collapsible:
-            self._arrow_lbl = QtWidgets.QLabel("▾")
-            self._arrow_lbl.setFixedWidth(14)
-            self._arrow_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            self._arrow_lbl.setStyleSheet(f"font-size:10px;color:{_P['dim']};")
-            lay.addWidget(self._arrow_lbl)
-
-    def mousePressEvent(self, ev):
-        if self._collapsible and ev.button() == QtCore.Qt.MouseButton.LeftButton:
-            self._collapsed = not self._collapsed
-            self._arrow_lbl.setText("▸" if self._collapsed else "▾")
-            self.toggled.emit(self._collapsed)
-        super().mousePressEvent(ev)
-
-    def is_collapsed(self) -> bool:
-        return self._collapsed
 
     def set_count(self, n: int) -> None:
         self._count = n
@@ -752,36 +727,9 @@ class FavoritesPage(QtWidgets.QWidget):
         self._mgr      = manager
         self._page_obj = page_object
         self._cards: dict[str, ChannelCard] = {}
-
-        # ── FIX: timer de desbote para colapsar rebuilds rápidos en uno solo ──
-        # Durante el inicio se emiten señales por cada canal (N canales = N
-        # rebuilds). El timer agrupa todas esas peticiones en un único repintado
-        # al final del ciclo de eventos actual.
-        self._rebuild_timer = QtCore.QTimer(self)
-        self._rebuild_timer.setSingleShot(True)
-        self._rebuild_timer.setInterval(0)          # próximo ciclo de eventos
-        self._rebuild_timer.timeout.connect(self._do_rebuild)
-
         self._build()
-        self._setup_sidebar_badge()
         self._connect()
         self._reload_all()
-        # FIX: forzar rebuild síncrono aquí para que cuando el widget se muestre
-        # por primera vez el layout ya esté construido. Sin esto, hay un frame
-        # donde las cards existen pero no están posicionadas (aparecen en 0,0).
-        self._rebuild_timer.stop()
-        self._do_rebuild()
-
-    # ── Petición de rebuild debounced ─────────────────────────────────────────
-    def _schedule_rebuild(self) -> None:
-        """Programa un rebuild diferido; si ya hay uno pendiente, lo ignora."""
-        if not self._rebuild_timer.isActive():
-            self._rebuild_timer.start()
-
-    def _do_rebuild(self) -> None:
-        """Ejecuta el rebuild real con repintado suspendido para evitar flash."""
-        self._rebuild_layout()
-        self._update_empty()
 
     def _build(self):
         root = QtWidgets.QVBoxLayout(self)
@@ -848,9 +796,8 @@ class FavoritesPage(QtWidgets.QWidget):
         root.addWidget(self._scroll, 1)
 
         # Sección headers — se insertan/remueven en _rebuild_layout
-        self._hdr_live    = _SectionHeader("EN VIVO",  live=True,  collapsible=False, parent=self._list_w)
-        self._hdr_offline = _SectionHeader("OFFLINE",  live=False, collapsible=True,  parent=self._list_w)
-        self._hdr_offline.toggled.connect(self._on_offline_toggled)
+        self._hdr_live    = _SectionHeader("EN VIVO",  live=True,  parent=self._list_w)
+        self._hdr_offline = _SectionHeader("OFFLINE",  live=False, parent=self._list_w)
 
         # Placeholder vacío
         self._empty = QtWidgets.QWidget()
@@ -879,27 +826,6 @@ class FavoritesPage(QtWidgets.QWidget):
         el.addWidget(be, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         root.addWidget(self._empty, 1)
 
-    def _setup_sidebar_badge(self):
-        btn = self._page_obj.button
-        self._sidebar_live_badge = QtWidgets.QLabel(btn)
-        self._sidebar_live_badge.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self._sidebar_live_badge.setStyleSheet(
-            "background:#e91916;color:#fff;border-radius:7px;"
-            "font-size:8px;font-weight:700;border:1px solid rgba(0,0,0,0.25);"
-        )
-        self._sidebar_live_badge.hide()
-        QtCore.QTimer.singleShot(200, self._reposition_sidebar_badge)
-
-    def _reposition_sidebar_badge(self):
-        btn = self._page_obj.button
-        bw = btn.width()
-        if bw == 0:
-            QtCore.QTimer.singleShot(100, self._reposition_sidebar_badge)
-            return
-        badge   = self._sidebar_live_badge
-        badge_w = badge.width() if badge.width() > 0 else 14
-        badge.move(bw - badge_w - 2, 3)
-
     def _connect(self):
         m = self._mgr
         m.channelAdded.connect(self._on_added)
@@ -913,77 +839,42 @@ class FavoritesPage(QtWidgets.QWidget):
 
     # ── Reconstrucción del layout con secciones ───────────────────────────────
     def _rebuild_layout(self):
-        """Reordena todos los widgets en el layout respetando secciones.
+        """Reordena todos los widgets en el layout respetando secciones."""
+        lay = self._list_l
 
-        FIX: Se suspende el repintado del widget contenedor durante toda la
-        operación. Sin esto, cada llamada a setParent(None) + addWidget()
-        produce un frame intermedio visible → parpadeo.
+        # Sacar todos los widgets del layout (sin destruirlos)
+        while lay.count() > 0:
+            item = lay.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
 
-        FIX 2: setUpdatesEnabled en _list_w NO protege a los widgets hijo:
-        cada hijo se sigue pintando por su cuenta. Por eso ahora ocultamos
-        cada widget ANTES de llamar setParent(None) — sin eso, al volverse
-        ventana de nivel superior durante un instante, se pinta solo y parpadea.
-        set_count() también se llama DESPUÉS de addWidget, no antes, porque
-        setVisible(True) sobre un widget sin padre lo mostraría suelto.
-        """
-        # ── Suspender repintado para evitar frames intermedios ────────────────
-        self._list_w.setUpdatesEnabled(False)
-        try:
-            lay = self._list_l
+        channels   = self._mgr.channels()
+        live_logins = [ch.login for ch in channels if ch.is_live]
+        off_logins  = [ch.login for ch in channels if not ch.is_live]
 
-            # Sacar todos los widgets del layout sin destruirlos.
-            # IMPORTANTE: ocultamos cada widget ANTES de quitarle el padre.
-            # Sin hide(), setParent(None) lo convierte en ventana flotante
-            # visible un instante → parpadeo aunque _list_w tenga updates off.
-            while lay.count() > 0:
-                item = lay.takeAt(0)
-                if item.widget():
-                    w = item.widget()
-                    w.hide()          # FIX: sin esto aparece como ventana suelta
-                    w.setParent(None)
+        # Sección EN VIVO
+        self._hdr_live.set_count(len(live_logins))
+        if live_logins:
+            self._hdr_live.setParent(self._list_w)
+            lay.addWidget(self._hdr_live)
+            for login in live_logins:
+                card = self._cards.get(login)
+                if card:
+                    card.setParent(self._list_w)
+                    lay.addWidget(card)
 
-            channels    = self._mgr.channels()
-            live_logins = [ch.login for ch in channels if ch.is_live]
-            off_logins  = [ch.login for ch in channels if not ch.is_live]
+        # Sección OFFLINE
+        self._hdr_offline.set_count(len(off_logins))
+        if off_logins:
+            self._hdr_offline.setParent(self._list_w)
+            lay.addWidget(self._hdr_offline)
+            for login in off_logins:
+                card = self._cards.get(login)
+                if card:
+                    card.setParent(self._list_w)
+                    lay.addWidget(card)
 
-            # Sección EN VIVO
-            if live_logins:
-                self._hdr_live.setParent(self._list_w)
-                lay.addWidget(self._hdr_live)
-                self._hdr_live.set_count(len(live_logins))  # FIX: después de addWidget
-                for login in live_logins:
-                    card = self._cards.get(login)
-                    if card:
-                        card.setParent(self._list_w)
-                        lay.addWidget(card)
-                        card.show()   # FIX: mostrar explícitamente tras addWidget
-            else:
-                self._hdr_live.set_count(0)  # solo actualiza el texto/oculta
-
-            # Sección OFFLINE
-            if off_logins:
-                self._hdr_offline.setParent(self._list_w)
-                lay.addWidget(self._hdr_offline)
-                self._hdr_offline.set_count(len(off_logins))  # FIX: después de addWidget
-                if not self._hdr_offline.is_collapsed():
-                    for login in off_logins:
-                        card = self._cards.get(login)
-                        if card:
-                            card.setParent(self._list_w)
-                            lay.addWidget(card)
-                            card.show()   # FIX: mostrar explícitamente tras addWidget
-            else:
-                self._hdr_offline.set_count(0)  # solo actualiza el texto/oculta
-
-            lay.addStretch()
-        finally:
-            # Siempre reactivar el repintado, incluso si algo falla
-            self._list_w.setUpdatesEnabled(True)
-
-    # ── Toggle colapso offline ────────────────────────────────────────────────
-    def _on_offline_toggled(self, collapsed: bool):
-        """Muestra u oculta las tarjetas offline sin perder su estado."""
-        self._schedule_rebuild()
+        lay.addStretch()
 
     # ── Slots ─────────────────────────────────────────────────────────────────
     def _on_add(self):
@@ -1001,21 +892,18 @@ class FavoritesPage(QtWidgets.QWidget):
     def _on_added(self, ch):
         if ch.login not in self._cards:
             card = ChannelCard(ch, self._list_w)
-            card.hide()                                     # FIX: evita aparición en (0,0) antes del layout
             card.openInApp.connect(self.openChannelRequested)
             card.openInBrowser.connect(self.openBrowserRequested)
             card.removeFav.connect(self._mgr.remove)
             self._cards[ch.login] = card
-        # FIX: en vez de reconstruir inmediatamente, diferimos con el timer.
-        # Si llegan 21 channelAdded seguidos, sólo se hace UN rebuild al final.
-        self._schedule_rebuild()
+        self._rebuild_layout()
         self._update_empty()
 
     def _on_removed(self, login):
         card = self._cards.pop(login, None)
         if card:
             card.deleteLater()
-        self._schedule_rebuild()
+        self._rebuild_layout()
         self._update_empty()
 
     def _on_updated(self, ch):
@@ -1025,23 +913,14 @@ class FavoritesPage(QtWidgets.QWidget):
             card.update_state(ch)
             # Si cambió el estado live/offline → reordenar secciones
             if was_live != ch.is_live:
-                self._schedule_rebuild()
+                self._rebuild_layout()
             elif self._mgr.sort_criteria() in (
                 SortCriteria.STATUS_THEN_VIEWERS, SortCriteria.VIEWERS_DESC
             ):
-                self._schedule_rebuild()
+                self._rebuild_layout()
 
     def _on_live_count(self, count):
-        if count:
-            txt     = str(count) if count < 100 else "99+"
-            badge_w = max(14, len(txt) * 6 + 6)
-            self._sidebar_live_badge.setFixedSize(badge_w, 14)
-            self._sidebar_live_badge.setText(txt)
-            self._sidebar_live_badge.show()
-            self._reposition_sidebar_badge()
-        else:
-            self._sidebar_live_badge.hide()
-
+        self._page_obj.setPageName("" if count == 0 else str(count))
         try:
             self._page_obj.button.setToolTip(
                 f"Favoritos — {count} en vivo" if count else "Favoritos"
@@ -1065,15 +944,11 @@ class FavoritesPage(QtWidgets.QWidget):
         self._cards.clear()
         for ch in self._mgr.channels():
             card = ChannelCard(ch, self._list_w)
-            card.hide()                                     # FIX: evita aparición en (0,0) antes del layout
             card.openInApp.connect(self.openChannelRequested)
             card.openInBrowser.connect(self.openBrowserRequested)
             card.removeFav.connect(self._mgr.remove)
             self._cards[ch.login] = card
-        # FIX: diferimos el rebuild para que si _reload_all se llama varias
-        # veces seguidas (sortCriteriaChanged + listReordered simultáneos)
-        # sólo se ejecute una vez.
-        self._schedule_rebuild()
+        self._rebuild_layout()
         self._update_empty()
 
     def _update_empty(self):
