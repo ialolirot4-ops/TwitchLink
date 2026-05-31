@@ -145,19 +145,34 @@ class _SectionHeader(QtWidgets.QWidget):
     """
     Separador visual entre secciones EN VIVO / OFFLINE.
     Muestra un punto de color, el label, una línea separadora y el contador.
+    Si collapsible=True, se puede colapsar/expandir haciendo clic.
     """
-    def __init__(self, label: str, live: bool, parent=None):
+    toggled = QtCore.pyqtSignal(bool)   # emite True cuando se colapsa
+
+    def __init__(self, label: str, live: bool, collapsible: bool = False, parent=None):
         super().__init__(parent=parent)
         if not _P:
             _build_palette()
-        self._live  = live
-        self._count = 0
+        self._live        = live
+        self._count       = 0
+        self._collapsible = collapsible
+        self._collapsed   = False
         self.setFixedHeight(32)
         self.setStyleSheet("background:transparent;")
+
+        if collapsible:
+            self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(12, 0, 16, 0)
         lay.setSpacing(8)
+
+        # Chevron (solo en secciones colapsables)
+        if collapsible:
+            self._chevron = QtWidgets.QLabel("▼")
+            self._chevron.setFixedWidth(12)
+            self._chevron.setStyleSheet(f"font-size:9px;color:{_P['dim']};")
+            lay.addWidget(self._chevron)
 
         # Punto de estado
         dot = QtWidgets.QLabel("●")
@@ -186,6 +201,16 @@ class _SectionHeader(QtWidgets.QWidget):
                                      QtCore.Qt.AlignmentFlag.AlignVCenter)
         self._count_lbl.setStyleSheet(f"font-size:10px;color:{_P['mute']};")
         lay.addWidget(self._count_lbl)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        if self._collapsible and event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self._collapsed = not self._collapsed
+            self._chevron.setText("▶" if self._collapsed else "▼")
+            self.toggled.emit(self._collapsed)
+        super().mousePressEvent(event)
+
+    def is_collapsed(self) -> bool:
+        return self._collapsed
 
     def set_count(self, n: int) -> None:
         self._count = n
@@ -796,8 +821,8 @@ class FavoritesPage(QtWidgets.QWidget):
         root.addWidget(self._scroll, 1)
 
         # Sección headers — se insertan/remueven en _rebuild_layout
-        self._hdr_live    = _SectionHeader("EN VIVO",  live=True,  parent=self._list_w)
-        self._hdr_offline = _SectionHeader("OFFLINE",  live=False, parent=self._list_w)
+        self._hdr_live    = _SectionHeader("EN VIVO", live=True,  collapsible=False, parent=self._list_w)
+        self._hdr_offline = _SectionHeader("OFFLINE", live=False, collapsible=True,  parent=self._list_w)
 
         # Placeholder vacío
         self._empty = QtWidgets.QWidget()
@@ -836,6 +861,7 @@ class FavoritesPage(QtWidgets.QWidget):
         m.listReordered.connect(self._reload_all)
         m.pollStarted.connect(self._on_poll_start)
         m.pollFinished.connect(lambda: self._spin.setText(""))
+        self._hdr_offline.toggled.connect(lambda _: self._rebuild_layout())
 
     # ── Reconstrucción del layout con secciones ───────────────────────────────
     def _rebuild_layout(self):
@@ -868,11 +894,12 @@ class FavoritesPage(QtWidgets.QWidget):
         if off_logins:
             self._hdr_offline.setParent(self._list_w)
             lay.addWidget(self._hdr_offline)
-            for login in off_logins:
-                card = self._cards.get(login)
-                if card:
-                    card.setParent(self._list_w)
-                    lay.addWidget(card)
+            if not self._hdr_offline.is_collapsed():
+                for login in off_logins:
+                    card = self._cards.get(login)
+                    if card:
+                        card.setParent(self._list_w)
+                        lay.addWidget(card)
 
         lay.addStretch()
 

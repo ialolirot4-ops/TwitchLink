@@ -327,11 +327,99 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
         Utils.openUrl(Utils.joinUrl(App.Updater.status.versionInfo.updateUrl, params={"lang": App.Translator.getCurrentLanguageCode()}))
         self.shutdown()
 
+    def _askCloseAction(self) -> str:
+        """
+        Muestra un diálogo preguntando qué hacer al cerrar.
+        Devuelve: 'tray' | 'exit' | 'cancel'
+        """
+        dlg = QtWidgets.QDialog(self)
+        dlg.setWindowTitle(T("exit") if hasattr(dlg, "setWindowTitle") else "Cerrar")
+        dlg.setFixedWidth(340)
+        dlg.setWindowFlags(
+            dlg.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
+        )
+
+        lay = QtWidgets.QVBoxLayout(dlg)
+        lay.setContentsMargins(20, 18, 20, 14)
+        lay.setSpacing(14)
+
+        lbl = QtWidgets.QLabel(f"¿Qué deseas hacer con {Config.APP_NAME}?")
+        lbl.setWordWrap(True)
+        lbl.setStyleSheet("font-size:13px;font-weight:600;")
+        lay.addWidget(lbl)
+
+        result = ["cancel"]
+
+        btn_tray = QtWidgets.QPushButton("  🔽  Minimizar al system tray")
+        btn_tray.setMinimumHeight(36)
+        btn_tray.setStyleSheet(
+            "QPushButton{border:1px solid palette(mid);border-radius:6px;"
+            "font-size:12px;text-align:left;padding:0 12px;}"
+            "QPushButton:hover{background:palette(highlight);color:palette(highlighted-text);}"
+        )
+        sub_tray = QtWidgets.QLabel(
+            "La aplicación seguirá corriendo en segundo plano."
+        )
+        sub_tray.setStyleSheet("font-size:10px;color:palette(mid);margin-left:2px;")
+
+        btn_exit = QtWidgets.QPushButton("  ✕  Cerrar completamente")
+        btn_exit.setMinimumHeight(36)
+        btn_exit.setStyleSheet(
+            "QPushButton{border:1px solid palette(mid);border-radius:6px;"
+            "font-size:12px;text-align:left;padding:0 12px;}"
+            "QPushButton:hover{background:#c0392b;color:#fff;}"
+        )
+        sub_exit = QtWidgets.QLabel("Detiene todos los procesos y cierra la app.")
+        sub_exit.setStyleSheet("font-size:10px;color:palette(mid);margin-left:2px;")
+
+        for btn, sub, val in [
+            (btn_tray, sub_tray, "tray"),
+            (btn_exit, sub_exit, "exit"),
+        ]:
+            grp = QtWidgets.QVBoxLayout()
+            grp.setSpacing(2)
+            grp.addWidget(btn)
+            grp.addWidget(sub)
+            lay.addLayout(grp)
+
+            def _make_handler(_val, _dlg):
+                def _handler():
+                    result[0] = _val
+                    _dlg.accept()
+                return _handler
+
+            btn.clicked.connect(_make_handler(val, dlg))
+
+        cancel_row = QtWidgets.QHBoxLayout()
+        cancel_row.addStretch()
+        btn_cancel = QtWidgets.QPushButton("Cancelar")
+        btn_cancel.setFixedHeight(28)
+        btn_cancel.clicked.connect(dlg.reject)
+        cancel_row.addWidget(btn_cancel)
+        lay.addLayout(cancel_row)
+
+        dlg.exec()
+        return result[0]
+
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         super().closeEvent(event)
         event.ignore()
-        if App.Updater.status.isOperational() and self.isVisible() and Utils.isMinimizeToSystemTraySupported() and App.Preferences.general.isSystemTrayEnabled() and event.spontaneous():
-            self.moveToSystemTray()
+        if not event.spontaneous():
+            self.confirmShutdown()
+            return
+        tray_available = (
+            App.Updater.status.isOperational()
+            and self.isVisible()
+            and Utils.isMinimizeToSystemTraySupported()
+            and App.Preferences.general.isSystemTrayEnabled()
+        )
+        if tray_available:
+            action = self._askCloseAction()
+            if action == "tray":
+                self.moveToSystemTray()
+            elif action == "exit":
+                self.confirmShutdown()
+            # "cancel" → no hacer nada, la ventana sigue abierta
         else:
             self.confirmShutdown()
 
