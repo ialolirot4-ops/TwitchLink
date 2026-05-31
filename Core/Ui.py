@@ -99,7 +99,7 @@ class Ui:
     WebViewWidget = None
 
 
-from Ui import MainWindow, Loading, Setup, Settings, PropertyView, Account, ExternalBrowserLauncher, AccountImportProgressView, About, DocumentView, Home, Search, VideoWidget, VideoDownloadWidget, SearchResult, DownloadMenu, DownloadViewControlBar, DownloadInfoView, DownloaderView, Downloads, DownloadPreview, Download, ScheduledDownloads, ScheduledDownloadPreview, ScheduledDownloadSettings, DownloadHistories, DownloadHistoryView, WebViewWidget
+from Ui import MainWindow, Loading, Setup, Settings, PropertyView, Account, ExternalBrowserLauncher, AccountImportProgressView, About, DocumentView, Home, Search, VideoWidget, VideoDownloadWidget, SearchResult, DownloadMenu, DownloadViewControlBar, DownloadInfoView, DownloaderView, Downloads, DownloadPreview, Download, ScheduledDownloads, ScheduledDownloadPreview, ScheduledDownloadSettings, DownloadHistories, DownloadHistoryView, WebViewWidget, BatchDownload
 
 
 Ui.MainWindow = MainWindow.MainWindow
@@ -128,5 +128,6 @@ Ui.ScheduledDownloads = ScheduledDownloads.ScheduledDownloads
 Ui.ScheduledDownloadPreview = ScheduledDownloadPreview.ScheduledDownloadPreview
 Ui.ScheduledDownloadSettings = ScheduledDownloadSettings.ScheduledDownloadSettings
 Ui.DownloadHistories = DownloadHistories.DownloadHistories
+Ui.BatchDownload = BatchDownload.BatchDownload
 Ui.DownloadHistoryView = DownloadHistoryView.DownloadHistoryView
 Ui.WebViewWidget = WebViewWidget.WebViewWidget

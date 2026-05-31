@@ -60,6 +60,20 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
         self.downloads.appShutdownRequested.connect(self.shutdown)
         self.downloads.systemShutdownRequested.connect(self.shutdownSystem)
         self._ui.downloadsPage.layout().addWidget(self.downloads)
+
+        # ── Batch Download button — inserted at top of downloads page ─────────
+        batchBtn = QtWidgets.QToolButton(parent=self)
+        batchBtn.setText(T("#Batch Download…"))
+        batchBtn.setToolTip(T("#Queue multiple downloads from a URL list"))
+        batchBtn.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        batchBtn.setMinimumHeight(28)
+        batchBtn.clicked.connect(self.openBatchDownload)
+        batchRow = QtWidgets.QHBoxLayout()
+        batchRow.setContentsMargins(8, 4, 8, 0)
+        batchRow.addStretch()
+        batchRow.addWidget(batchBtn)
+        self._ui.downloadsPage.layout().insertLayout(0, batchRow)
+        # ──────────────────────────────────────────────────────────────────────
         self.scheduledDownloads = ScheduledDownloadsPage(self.scheduledDownloadsPageObject, parent=self)
         self._ui.scheduledDownloadsPage.layout().addWidget(self.scheduledDownloads)
         self.account = AccountPage(self.accountPageObject, parent=self)
@@ -326,6 +340,9 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
 
     def openAbout(self) -> None:
         self.information.openAbout()
+
+    def openBatchDownload(self) -> None:
+        Ui.BatchDownload(parent=self).exec()
 
     def openTermsOfService(self) -> None:
         self.information.openTermsOfService()
