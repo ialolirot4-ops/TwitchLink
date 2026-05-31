@@ -48,7 +48,7 @@ class BatchDownload(QtWidgets.QDialog):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent=parent)
-        self.setWindowTitle(T("#Batch Download"))
+        self.setWindowTitle(T("Batch Download"))
         self.setMinimumSize(680, 520)
         self.setWindowFlag(QtCore.Qt.WindowType.WindowMaximizeButtonHint)
 
@@ -68,7 +68,7 @@ class BatchDownload(QtWidgets.QDialog):
         layout.setContentsMargins(16, 16, 16, 16)
 
         # Title
-        titleLabel = QtWidgets.QLabel(T("#Batch Download"), self)
+        titleLabel = QtWidgets.QLabel(T("Batch Download"), self)
         font = titleLabel.font()
         font.setPointSize(14)
         font.setBold(True)
@@ -81,7 +81,7 @@ class BatchDownload(QtWidgets.QDialog):
 
         # Input area
         inputLabel = QtWidgets.QLabel(
-            T("#Enter one URL or ID per line (channel, video, clip):"), self
+            T("Enter one URL or ID per line (channel, video, clip):"), self
         )
         layout.addWidget(inputLabel)
 
@@ -98,7 +98,7 @@ class BatchDownload(QtWidgets.QDialog):
 
         # Load file button
         fileRow = QtWidgets.QHBoxLayout()
-        loadFileBtn = QtWidgets.QPushButton(T("#Load from .txt file…"), self)
+        loadFileBtn = QtWidgets.QPushButton(T("Load from .txt file…"), self)
         loadFileBtn.setFixedWidth(180)
         loadFileBtn.clicked.connect(self._loadFromFile)
         fileRow.addWidget(loadFileBtn)
@@ -107,7 +107,7 @@ class BatchDownload(QtWidgets.QDialog):
 
         # Progress table
         self._table = QtWidgets.QTableWidget(0, 3, self)
-        self._table.setHorizontalHeaderLabels([T("#URL / ID"), T("#Content"), T("#Status")])
+        self._table.setHorizontalHeaderLabels([T("URL / ID"), T("Content"), T("Status")])
         self._table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self._table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self._table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.Fixed)
@@ -119,7 +119,7 @@ class BatchDownload(QtWidgets.QDialog):
 
         # Bottom buttons
         btnRow = QtWidgets.QHBoxLayout()
-        self._startBtn = QtWidgets.QPushButton(T("#Start Batch Download"), self)
+        self._startBtn = QtWidgets.QPushButton(T("Start Batch Download"), self)
         self._startBtn.setDefault(True)
         self._startBtn.clicked.connect(self._startBatch)
         closeBtn = QtWidgets.QPushButton(T("close"), self)
@@ -135,14 +135,14 @@ class BatchDownload(QtWidgets.QDialog):
 
     def _loadFromFile(self) -> None:
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, T("#Load URL list"), "", "Text files (*.txt);;All files (*)"
+            self, T("Load URL list"), "", "Text files (*.txt);;All files (*)"
         )
         if path:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     self._textEdit.setPlainText(f.read())
             except Exception as e:
-                Utils.info("file-error", f"#Could not read file:\n{e}", parent=self)
+                Utils.info("file-error", f"Could not read file:\n{e}", parent=self)
 
     def _startBatch(self) -> None:
         if self._processing:
@@ -151,7 +151,7 @@ class BatchDownload(QtWidgets.QDialog):
         raw = self._textEdit.toPlainText()
         entries = [line.strip() for line in raw.splitlines() if line.strip()]
         if not entries:
-            Utils.info("no-input", "#Please enter at least one URL or ID.", parent=self)
+            Utils.info("no-input", "Please enter at least one URL or ID.", parent=self)
             return
 
         self._entries = entries
@@ -198,7 +198,7 @@ class BatchDownload(QtWidgets.QDialog):
             # A channel result — only downloadable if live
             if data.stream is None:
                 self._table.item(row, 1).setText(data.displayName or data.login)
-                self._setRowStatus(row, _Status.SKIPPED, T("#Channel is offline"))
+                self._setRowStatus(row, _Status.SKIPPED, T("Channel is offline"))
                 self._advance()
             else:
                 self._table.item(row, 1).setText(
@@ -234,7 +234,7 @@ class BatchDownload(QtWidgets.QDialog):
 
         else:
             # External playback or unknown type — skip
-            self._setRowStatus(row, _Status.SKIPPED, T("#Unsupported content type"))
+            self._setRowStatus(row, _Status.SKIPPED, T("Unsupported content type"))
             self._advance()
 
     def _onPlaybackFinished(self, generator) -> None:
@@ -249,7 +249,7 @@ class BatchDownload(QtWidgets.QDialog):
         # We rebuild it from the stored search — use a dummy to trigger DownloadInfo defaults
         content = self._getContentForRow(row)
         if content is None:
-            self._setRowStatus(row, _Status.ERROR, T("#Could not determine content"))
+            self._setRowStatus(row, _Status.ERROR, T("Could not determine content"))
             self._advance()
             return
 
@@ -258,7 +258,7 @@ class BatchDownload(QtWidgets.QDialog):
             App.DownloadManager.create(downloadInfo)
             self._setRowStatus(row, _Status.QUEUED)
         except ContentManager.Exceptions.RestrictedContent:
-            self._setRowStatus(row, _Status.SKIPPED, T("#Content restricted"))
+            self._setRowStatus(row, _Status.SKIPPED, T("Content restricted"))
         except Exception as e:
             self._setRowStatus(row, _Status.ERROR, str(e))
         self._advance()
@@ -274,13 +274,13 @@ class BatchDownload(QtWidgets.QDialog):
         self._textEdit.setReadOnly(False)
         queued  = sum(1 for r in range(self._table.rowCount())
                       if self._table.item(r, 2) and
-                      self._table.item(r, 2).text() == T(f"#{_Status.QUEUED}"))
+                      self._table.item(r, 2).text() == T(f"{_Status.QUEUED}"))
         errors  = sum(1 for r in range(self._table.rowCount())
                       if self._table.item(r, 2) and
-                      self._table.item(r, 2).text().startswith(T(f"#{_Status.ERROR}")))
+                      self._table.item(r, 2).text().startswith(T(f"{_Status.ERROR}")))
         Utils.info(
             "batch-complete",
-            T("#Batch complete.\nQueued: {q}   Errors/skipped: {e}",
+            T("Batch complete.\nQueued: {q}   Errors/skipped: {e}",
               q=queued, e=self._table.rowCount() - queued),
             parent=self,
         )
@@ -290,7 +290,7 @@ class BatchDownload(QtWidgets.QDialog):
     # ------------------------------------------------------------------
 
     def _setRowStatus(self, row: int, status: str, detail: str = "") -> None:
-        text  = T(f"#{status.capitalize()}") + (f": {detail}" if detail else "")
+        text  = T(f"{status.capitalize()}") + (f": {detail}" if detail else "")
         item  = QtWidgets.QTableWidgetItem(text)
         color = _STATUS_COLOR.get(status, "")
         if color:
@@ -318,7 +318,7 @@ class BatchDownload(QtWidgets.QDialog):
         if isinstance(data, TwitchGQLModels.Channel):
             if data.stream is None:
                 self._table.item(row, 1).setText(data.displayName or data.login)
-                self._setRowStatus(row, _Status.SKIPPED, T("#Channel is offline"))
+                self._setRowStatus(row, _Status.SKIPPED, T("Channel is offline"))
                 self._advance()
                 return
             content = data.stream
@@ -333,7 +333,7 @@ class BatchDownload(QtWidgets.QDialog):
             content = data
             label = data.title or data.slug
         else:
-            self._setRowStatus(row, _Status.SKIPPED, T("#Unsupported content type"))
+            self._setRowStatus(row, _Status.SKIPPED, T("Unsupported content type"))
             self._advance()
             return
 

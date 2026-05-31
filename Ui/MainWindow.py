@@ -63,8 +63,8 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
 
         # ── Batch Download button — corner widget inside the Downloads tab bar ─
         batchBtn = QtWidgets.QToolButton(parent=self)
-        batchBtn.setText(T("#Batch Download…"))
-        batchBtn.setToolTip(T("#Queue multiple downloads from a URL list"))
+        batchBtn.setText("Batch Download…")
+        batchBtn.setToolTip("Queue multiple downloads from a URL list")
         batchBtn.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
         batchBtn.setMinimumHeight(28)
         batchBtn.clicked.connect(self.openBatchDownload)

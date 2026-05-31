@@ -59,28 +59,28 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self.updateFilenamePreview()
 
         # ── Recording conditions group (programmatic) ─────────────────────────
-        condGroup = QtWidgets.QGroupBox(T("#Recording conditions"), parent=self)
+        condGroup = QtWidgets.QGroupBox(T("Recording conditions"), parent=self)
         condForm  = QtWidgets.QFormLayout(condGroup)
         condForm.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 
         self._gameFilterEdit = QtWidgets.QLineEdit(parent=condGroup)
-        self._gameFilterEdit.setPlaceholderText(T("#Any game"))
+        self._gameFilterEdit.setPlaceholderText(T("Any game"))
         self._gameFilterEdit.setText(self.virtualPreset.getGameFilter())
-        self._gameFilterEdit.setToolTip(T("#Record only when the game name contains this text (case-insensitive). Leave empty to record any game."))
-        condForm.addRow(T("#Game contains:"), self._gameFilterEdit)
+        self._gameFilterEdit.setToolTip(T("Record only when the game name contains this text (case-insensitive). Leave empty to record any game."))
+        condForm.addRow(T("Game contains:"), self._gameFilterEdit)
 
         self._titleFilterEdit = QtWidgets.QLineEdit(parent=condGroup)
-        self._titleFilterEdit.setPlaceholderText(T("#Any title"))
+        self._titleFilterEdit.setPlaceholderText(T("Any title"))
         self._titleFilterEdit.setText(self.virtualPreset.getTitleFilter())
-        self._titleFilterEdit.setToolTip(T("#Record only when the stream title contains this text (case-insensitive). Leave empty to record any title."))
-        condForm.addRow(T("#Title contains:"), self._titleFilterEdit)
+        self._titleFilterEdit.setToolTip(T("Record only when the stream title contains this text (case-insensitive). Leave empty to record any title."))
+        condForm.addRow(T("Title contains:"), self._titleFilterEdit)
 
         self._maxRecordingsSpin = QtWidgets.QSpinBox(parent=condGroup)
         self._maxRecordingsSpin.setRange(0, 9999)
-        self._maxRecordingsSpin.setSpecialValueText(T("#Unlimited"))
+        self._maxRecordingsSpin.setSpecialValueText(T("Unlimited"))
         self._maxRecordingsSpin.setValue(self.virtualPreset.getMaxRecordings())
-        self._maxRecordingsSpin.setToolTip(T("#Stop recording after this many streams (0 = unlimited). Resets when the app restarts."))
-        condForm.addRow(T("#Max recordings:"), self._maxRecordingsSpin)
+        self._maxRecordingsSpin.setToolTip(T("Stop recording after this many streams (0 = unlimited). Resets when the app restarts."))
+        condForm.addRow(T("Max recordings:"), self._maxRecordingsSpin)
 
         # Insert before the last widget (save/cancel button row) in the dialog layout
         dialogLayout = self._ui.Dialog.layout() if hasattr(self._ui, "Dialog") else self.layout()
@@ -118,7 +118,7 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self._ui.fileFormat.blockSignals(False)
 
     def showFilenamePreviewInfo(self) -> None:
-        Utils.info("information", T("#This is just a preview.\nSome values may be different from the actual ones. ({properties}, etc.)", properties=", ".join((f"{T('stream')} {T('id')}", T("title"), f"{T('channel')} {T('displayname')}"))), contentTranslate=False, parent=self)
+        Utils.info("information", T("This is just a preview.\nSome values may be different from the actual ones. ({properties}, etc.)", properties=", ".join((f"{T('stream')} {T('id')}", T("title"), f"{T('channel')} {T('displayname')}"))), contentTranslate=False, parent=self)
 
     def preferredQualityChanged(self, index: int) -> None:
         self.virtualPreset.setPreferredQuality(index)
@@ -130,16 +130,16 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self.updateFilenamePreview()
 
     def showPreferredResolutionOnlyInfo(self) -> None:
-        Utils.info("information", "#Please note that certain video qualities (such as Source) may not be available immediately after a live broadcast begins.\nIf this option is disabled, it will automatically select and begin downloading the closest available quality.\nIf this option is enabled, it will wait until the selected quality is available.\n(Please be aware that if the selected quality continues to be unavailable, the download will not proceed.)", parent=self)
+        Utils.info("information", "Please note that certain video qualities (such as Source) may not be available immediately after a live broadcast begins.\nIf this option is disabled, it will automatically select and begin downloading the closest available quality.\nIf this option is enabled, it will wait until the selected quality is available.\n(Please be aware that if the selected quality continues to be unavailable, the download will not proceed.)", parent=self)
 
     def showAdBlockInfo(self) -> None:
-        skipSegmentsInfo = T("#[Skip Segments]\n\nAds are skipped, but the stream during that time cannot be downloaded.\nIn this case, no alternative screen is shown, and it will directly connect to the scene after the ad, making the stream appear as if it's interrupted in the middle.")
-        alternativeScreenInfo = T("#[Alternative Screen]\n\nDisplays an alternate screen instead of skipping ads.\nIn this case, the entire length of the stream is maintained, but some players might not play the video correctly.")
-        Utils.info("information", f"{T('#If commercials are broadcast during this stream, they will be handled according to the following rules.')}\n\n{skipSegmentsInfo}\n\n\n{alternativeScreenInfo}", contentTranslate=False, parent=self)
+        skipSegmentsInfo = T("[Skip Segments]\n\nAds are skipped, but the stream during that time cannot be downloaded.\nIn this case, no alternative screen is shown, and it will directly connect to the scene after the ad, making the stream appear as if it's interrupted in the middle.")
+        alternativeScreenInfo = T("[Alternative Screen]\n\nDisplays an alternate screen instead of skipping ads.\nIn this case, the entire length of the stream is maintained, but some players might not play the video correctly.")
+        Utils.info("information", f"{T('If commercials are broadcast during this stream, they will be handled according to the following rules.')}\n\n{skipSegmentsInfo}\n\n\n{alternativeScreenInfo}", contentTranslate=False, parent=self)
 
     def showEncoderInfo(self) -> None:
-        remuxInfo = T("#[Remux]\n\nThe file will be saved as a standard video file.\nThis involves a minor conversion process of the Transport Stream file to ensure its compatibility with standard players.\nThe quality of the video is retained, with only additional information about the video being modified for compatibility with standard players.")
-        concatInfo = T("#[Concat]\n\nThis feature enables you to store Transport Stream file in its original form, without any conversion to ensure its compatibility with standard players.\nSince these files are typically designed for streaming, they may not play correctly on certain players.\nAdditionally, if commercials are broadcast during a live stream or parts are missing due to network issues, some players might not play the video correctly.")
+        remuxInfo = T("[Remux]\n\nThe file will be saved as a standard video file.\nThis involves a minor conversion process of the Transport Stream file to ensure its compatibility with standard players.\nThe quality of the video is retained, with only additional information about the video being modified for compatibility with standard players.")
+        concatInfo = T("[Concat]\n\nThis feature enables you to store Transport Stream file in its original form, without any conversion to ensure its compatibility with standard players.\nSince these files are typically designed for streaming, they may not play correctly on certain players.\nAdditionally, if commercials are broadcast during a live stream or parts are missing due to network issues, some players might not play the video correctly.")
         Utils.info("information", f"{remuxInfo}\n\n\n{concatInfo}", contentTranslate=False, parent=self)
 
     def createPreviewStream(self) -> TwitchGQLModels.Stream:
@@ -202,12 +202,12 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
             formCheck.append(T("filename-template"))
         if len(formCheck) != 0:
             formInfo = "\n".join(formCheck)
-            Utils.info("warning", f"{T('#Some fields are empty.')}\n\n{formInfo}", contentTranslate=False, parent=self)
+            Utils.info("warning", f"{T('Some fields are empty.')}\n\n{formInfo}", contentTranslate=False, parent=self)
             return
         if not self.isEditMode:
             channel = self.getChannelFromText(self.virtualPreset.channel)
             if channel == None:
-                Utils.info("error", "#Channel ID is invalid.", parent=self)
+                Utils.info("error", "Channel ID is invalid.", parent=self)
                 return
             else:
                 self.virtualPreset.channel = channel
