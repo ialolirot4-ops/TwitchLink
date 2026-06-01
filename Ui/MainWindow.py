@@ -2,6 +2,7 @@ from Core.Ui import *
 from Services.Messages import Messages
 from Services.Document import DocumentData, DocumentButtonData
 from Ui.Components.Operators.NavigationBar import NavigationBar
+from Ui.Components.Operators.TabManager import TabManager
 from Ui.Components.Pages.SearchPage import SearchPage
 from Ui.Components.Pages.DownloadsPage import DownloadsPage
 from Ui.Components.Pages.ScheduledDownloadsPage import ScheduledDownloadsPage
@@ -95,9 +96,12 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
             page_object=self.favoritesPageObject,
             parent=self,
         )
+        self.favoritesPanel.setWindowTitle("Favoritos")
         self.favoritesPanel.openChannelRequested.connect(self._open_favorite_channel)
         self.favoritesPanel.openBrowserRequested.connect(self._open_favorite_browser)
-        self._ui.favoritesPage.layout().addWidget(self.favoritesPanel)
+        self._favoritesTabs = TabManager(parent=self)
+        self._favoritesTabs.addTab(self.favoritesPanel, icon=Icons.FAVORITES, closable=False)
+        self._ui.favoritesPage.layout().addWidget(self._favoritesTabs)
 
         # ── Descarga Multi-Plataforma — usa widgets definidos en mainWindow.ui ─
         self.socialPageObject = self.navigationBar.addPage(
@@ -111,7 +115,10 @@ class MainWindow(QtWidgets.QMainWindow, WindowGeometryManager):
             manager=App.SocialDownloadManager,
             parent=self,
         )
-        self._ui.socialPage.layout().addWidget(self.socialPanel)
+        self.socialPanel.setWindowTitle("Descarga Multi-Plataforma")
+        self._socialTabs = TabManager(parent=self)
+        self._socialTabs.addTab(self.socialPanel, icon=Icons.DOWNLOAD, closable=False)
+        self._ui.socialPage.layout().addWidget(self._socialTabs)
 
     def setupSystemTray(self) -> None:
         contextMenu = App.Instance.systemTrayIcon.contextMenu()

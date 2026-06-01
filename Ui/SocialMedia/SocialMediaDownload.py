@@ -62,7 +62,7 @@ class ActiveDownloadItem(QtWidgets.QFrame):
         icon_lbl = QtWidgets.QLabel(PLATFORM_ICONS.get(platform, "🌐"))
         icon_lbl.setStyleSheet(f"color: {color}; font-size: 16px;")
         self.title_lbl = QtWidgets.QLabel(title[:60] + "…" if len(title) > 60 else title)
-        self.title_lbl.setStyleSheet("font-weight: bold; font-size: 12px;")
+        self.title_lbl.setStyleSheet("font-weight: 600; font-size: 12px;")
         self.cancel_btn = QtWidgets.QPushButton("✕")
         self.cancel_btn.setFixedSize(24, 24)
         self.cancel_btn.setToolTip("Cancelar descarga")
@@ -81,7 +81,7 @@ class ActiveDownloadItem(QtWidgets.QFrame):
 
         # Estado
         self.status_lbl = QtWidgets.QLabel("Iniciando…")
-        self.status_lbl.setStyleSheet("font-size: 10px; color: gray;")
+        self.status_lbl.setStyleSheet("font-size: 10px; color: palette(shadow);")
 
         layout.addLayout(header)
         layout.addWidget(self.progress_bar)
@@ -155,11 +155,11 @@ class SocialMediaDownload(QtWidgets.QWidget):
 
         # ── Título ──────────────────────────────────────────────────────
         title_lbl = QtWidgets.QLabel("📥  Descarga Multi-Plataforma")
-        title_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
+        title_lbl.setStyleSheet("font-size: 18px; font-weight: 700;")
         subtitle = QtWidgets.QLabel(
             "YouTube · TikTok · Instagram · Twitter/X · Facebook · y +1800 sitios"
         )
-        subtitle.setStyleSheet("color: gray; font-size: 11px;")
+        subtitle.setStyleSheet("color: palette(shadow); font-size: 11px;")
         root.addWidget(title_lbl)
         root.addWidget(subtitle)
 
@@ -182,7 +182,7 @@ class SocialMediaDownload(QtWidgets.QWidget):
 
         # Plataforma detectada
         self._platform_lbl = QtWidgets.QLabel("")
-        self._platform_lbl.setStyleSheet("font-size: 11px; color: gray;")
+        self._platform_lbl.setStyleSheet("font-size: 11px; color: palette(shadow);")
         url_layout.addWidget(self._platform_lbl)
         root.addWidget(url_group)
 
@@ -325,10 +325,11 @@ class SocialMediaDownload(QtWidgets.QWidget):
         self._download_btn = QtWidgets.QPushButton("⬇  Iniciar Descarga")
         self._download_btn.setFixedHeight(38)
         self._download_btn.setStyleSheet(
-            "QPushButton { background-color: #5c1de0; color: white; "
-            "font-size: 14px; font-weight: bold; border-radius: 6px; }"
-            "QPushButton:hover { background-color: #7b3fe4; }"
-            "QPushButton:disabled { background-color: #888; }"
+            "QPushButton { background-color: rgb(145, 71, 255); color: white; "
+            "font-size: 14px; font-weight: 700; border-radius: 7px; border: none; }"
+            "QPushButton:hover { background-color: rgb(165, 100, 255); }"
+            "QPushButton:pressed { background-color: rgb(120, 50, 220); }"
+            "QPushButton:disabled { background-color: rgba(145, 71, 255, 0.38); color: rgba(255,255,255,0.5); }"
         )
         self._download_btn.clicked.connect(self._on_download)
         btn_row.addStretch()

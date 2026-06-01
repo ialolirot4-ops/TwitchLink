@@ -364,6 +364,8 @@ class FavoritesManager(QtCore.QObject):
         try:
             if not App.Preferences.general.isNotifyEnabled():
                 return
+            if not App.Preferences.favorites.get_notif_pref(ch.login):
+                return
             viewers_str = f"  •  {ch.viewers:,} espectadores" if ch.viewers else ""
             lines = [f"twitch.tv/{ch.login}{viewers_str}"]
             if ch.game_name:

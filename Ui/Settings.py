@@ -74,7 +74,7 @@ class Settings(QtWidgets.QWidget):
             parent=hookGroup,
         )
         hookInfo.setWordWrap(True)
-        hookInfo.setStyleSheet("color: gray; font-size: 11px;")
+        hookInfo.setStyleSheet("color: palette(shadow); font-size: 11px;")
         hookLayout.addWidget(hookInfo)
 
         self._hookEdit = QtWidgets.QLineEdit(parent=hookGroup)

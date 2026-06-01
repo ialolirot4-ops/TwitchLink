@@ -26,11 +26,13 @@ class About(QtWidgets.QWidget):
         self._ui.versionInfoLabel.setText(f"{T('version')} {Config.APP_VERSION}")
         if App.Updater.status.versionInfo.hasUpdate():
             self._ui.updateInfoLabel.setText(T("#{appName} {version} has been released!", appName=Config.APP_NAME, version=App.Updater.status.versionInfo.latestVersion))
-            self._ui.updateInfoLabel.setStyleSheet("color: rgb(255, 0, 0);")
+            # Rojo accesible en ambos temas
+            self._ui.updateInfoLabel.setStyleSheet("color: #e84040;")
             self._ui.updateButton.show()
         else:
             self._ui.updateInfoLabel.setText(T("#This is the latest version."))
-            self._ui.updateInfoLabel.setStyleSheet("color: rgb(105, 105, 105);")
+            # Usa el color de texto deshabilitado de la paleta activa
+            self._ui.updateInfoLabel.setStyleSheet("color: palette(shadow);")
             self._ui.updateButton.hide()
 
     def openHomepage(self) -> None:

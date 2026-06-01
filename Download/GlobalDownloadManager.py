@@ -103,9 +103,9 @@ class GlobalDownloadManager(QtCore.QObject):
             return
 
         fileSize: int = downloader.progress.byteSize
-        App.Preferences.updateDownloadStats(fileSize)
+        App.Preferences.temp.updateDownloadStats(fileSize)
 
-        stats = App.Preferences.getDownloadStats()
+        stats = App.Preferences.temp.getDownloadStats()
         totalFiles: int = stats["totalFiles"]
         totalByteSize: int = stats["totalByteSize"]
 
@@ -113,3 +113,29 @@ class GlobalDownloadManager(QtCore.QObject):
         if totalFiles >= self._nextMilestone:
             self._nextMilestone *= 2
             self.statsUpdated.emit(totalFiles, totalByteSize)
+
+        # Toast notification on successful download completion.
+        if App.Preferences.general.isNotifyEnabled():
+            try:
+                info = downloader.downloadInfo
+                content = info.content
+                title = getattr(content, "title", "") or ""
+                try:
+                    channel = content.broadcaster.displayName
+                except AttributeError:
+                    try:
+                        channel = content.owner.displayName
+                    except AttributeError:
+                        channel = ""
+                lines = []
+                if channel:
+                    lines.append(channel)
+                if title:
+                    lines.append(title[:120] + "…" if len(title) > 120 else title)
+                App.Instance.notification.toastMessage(
+                    title="✅  Descarga completada",
+                    message="\n".join(lines) if lines else "Descarga finalizada correctamente.",
+                    icon=App.Instance.notification.Icons.Information,
+                )
+            except Exception:
+                pass

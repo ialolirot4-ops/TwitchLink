@@ -5,6 +5,28 @@ from Services.Utils.Utils import Utils
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
+# ── Constantes de estilo ───────────────────────────────────────────────────
+_PURPLE       = "rgba(145, 71, 255, 255)"
+_PURPLE_HOVER = "rgba(165, 100, 255, 255)"
+
+# Sidebar dark: fondo muy oscuro con tinte purple
+_SIDEBAR_DARK  = "rgba(28, 26, 44, 248)"
+# Sidebar light: Twitch purple sólido
+_SIDEBAR_LIGHT = "rgba(125, 55, 235, 255)"
+
+# Botones dark: sobre fondo oscuro, checked = purple
+_BTN_DARK_NORMAL  = "QToolButton {background: transparent; border: none; border-radius: 8px;}"
+_BTN_DARK_HOVER   = "QToolButton:hover {background: rgba(145, 71, 255, 0.20);}"
+_BTN_DARK_CHECKED = "QToolButton:checked {background: rgba(145, 71, 255, 255);}"
+_BTN_DARK         = _BTN_DARK_NORMAL + _BTN_DARK_HOVER + _BTN_DARK_CHECKED
+
+# Botones light: sobre fondo purple, checked = blanco semiopaco
+_BTN_LIGHT_NORMAL  = "QToolButton {background: transparent; border: none; border-radius: 8px;}"
+_BTN_LIGHT_HOVER   = "QToolButton:hover {background: rgba(255, 255, 255, 0.22);}"
+_BTN_LIGHT_CHECKED = "QToolButton:checked {background: rgba(255, 255, 255, 0.95);}"
+_BTN_LIGHT         = _BTN_LIGHT_NORMAL + _BTN_LIGHT_HOVER + _BTN_LIGHT_CHECKED
+
+
 class PageObject(QtCore.QObject):
     showRequested = QtCore.pyqtSignal(object)
     buttonVisibilityChanged = QtCore.pyqtSignal(object, bool)
@@ -25,9 +47,9 @@ class PageObject(QtCore.QObject):
 
     def _setupThemeStyle(self) -> None:
         if App.ThemeManager.isDarkModeEnabled():
-            self.button.setStyleSheet("QToolButton {background: rgba(210, 179, 255, 255);border: none;} QToolButton:hover {background: rgba(200, 200, 200, 200);} QToolButton:checked {background: rgba(145, 71, 255, 255);}")
+            self.button.setStyleSheet(_BTN_DARK)
         else:
-            self.button.setStyleSheet("QToolButton {background: rgba(255, 255, 255, 150);border: none;} QToolButton:hover {background: rgba(200, 200, 200, 255);} QToolButton:checked {background: rgba(255, 255, 255, 255);}")
+            self.button.setStyleSheet(_BTN_LIGHT)
 
     def setPageIcon(self, icon: QtGui.QIcon | ThemedIcon | None, size: QtCore.QSize | None = None) -> None:
         self.buttonIconViewer.setIcon(icon)
@@ -76,9 +98,13 @@ class NavigationBar(QtCore.QObject):
 
     def _setupThemeStyle(self) -> None:
         if App.ThemeManager.isDarkModeEnabled():
-            self.buttonArea.setStyleSheet("#navigationBar {background: rgba(175, 154, 206, 230);}")
+            self.buttonArea.setStyleSheet(
+                f"#navigationBar {{ background: {_SIDEBAR_DARK}; }}"
+            )
         else:
-            self.buttonArea.setStyleSheet("#navigationBar {background: rgba(145, 71, 255, 255);}")
+            self.buttonArea.setStyleSheet(
+                f"#navigationBar {{ background: {_SIDEBAR_LIGHT}; }}"
+            )
 
     def setPageButtonVisible(self, pageObject: PageObject, visible: bool) -> None:
         if visible:
