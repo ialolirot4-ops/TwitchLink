@@ -339,6 +339,7 @@ class ScheduledDownload(QtCore.QObject):
         else:
             if self.isActive():
                 self.status.setError(generator.getError())
+                self._notifyError(generator.getError())
             else:
                 self.status.setNone()
 
@@ -365,13 +366,45 @@ class ScheduledDownload(QtCore.QObject):
             self.status.setNone()
         elif self.isActive():
             self.status.setDownloaderError(error)
+            if not isinstance(error, Exceptions.NetworkError):
+                self._notifyError(error)
         else:
             self.status.setNone()
+        # Run post-process if the file has content and the stop was intentional
+        # (success or manual cancel). Skip on NetworkError — the app will
+        # reconnect and keep recording, so the partial file is not final yet.
+        if not downloader.status.isFileRemoved() and not isinstance(error, Exceptions.NetworkError):
+            # Organize first so {file} in the post-process template already
+            # points to the final location inside {channel}/{type}/.
+            from Download.FolderOrganizer import organizeFile
+            organizeFile(downloader)
+            from Download.Downloader.Postprocessrunner import launch as _launchPostProcess
+            _launchPostProcess(downloader, override_cmd=self.preset.getPostProcessCommand() or None)
         downloader.deleteLater()
         self.downloader = None
         self.downloaderDestroyed.emit(self, downloader)
         if isinstance(error, Exceptions.NetworkError):
             self.startDownloadIfOnline()
+
+    def _notifyError(self, error: Exception) -> None:
+        """Notificación nativa cuando una descarga programada falla de forma definitiva."""
+        try:
+            if not App.Preferences.general.isNotifyEnabled():
+                return
+            channel_name = (
+                self.channel.displayName
+                if self.channel and self.channel.displayName
+                else self.preset.channel
+            )
+            error_msg = str(error).strip()
+            if len(error_msg) > 120:
+                error_msg = error_msg[:117] + "..."
+            App.Instance.notification.toastMessage(
+                title   = f"⚠️  Descarga programada fallida: {channel_name}",
+                message = error_msg or "Error desconocido",
+            )
+        except Exception:
+            pass
 
     def isDownloading(self) -> bool:
         return self.downloader != None

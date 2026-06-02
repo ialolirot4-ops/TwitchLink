@@ -32,12 +32,14 @@ class PostProcessRunner(QtCore.QObject):
     """
     Resolves the template, starts the process, and logs its output.
 
-    Usage:
-        runner = PostProcessRunner(command, context, logger, parent=self)
-        runner.start()
+    The class keeps a strong Python reference to every active instance in
+    _active so callers never need to store the runner themselves — just call
+    PostProcessRunner(...).start() or use the module-level launch() helper.
     """
 
     finished = QtCore.pyqtSignal(bool)   # True = exit code 0
+
+    _active: "set[PostProcessRunner]" = set()  # keeps Python refs alive
 
     def __init__(
         self,
@@ -63,9 +65,11 @@ class PostProcessRunner(QtCore.QObject):
     # ------------------------------------------------------------------
 
     def start(self) -> None:
+        PostProcessRunner._active.add(self)
         resolved = self._resolve(self._command)
         if not resolved:
             self._logger.warning("PostProcessRunner: command is empty, skipping.")
+            PostProcessRunner._active.discard(self)
             self.finished.emit(True)
             return
 
@@ -74,7 +78,7 @@ class PostProcessRunner(QtCore.QObject):
         # Split into program + args; on Windows use the shell so that
         # built-ins (echo, del, …) and .bat/.cmd files work.
         if sys.platform == "win32":
-            self._process.start("cmd.exe", ["/c", resolved])
+            self._startWindows(resolved)
         else:
             parts = shlex.split(resolved)
             self._process.start(parts[0], parts[1:])
@@ -95,6 +99,29 @@ class PostProcessRunner(QtCore.QObject):
             self._logger.warning(f"PostProcessRunner: template error — {e}")
             return template
 
+    def _startWindows(self, resolved: str) -> None:
+        """
+        On Windows, cmd.exe /c wraps the resolved string in an extra layer of
+        quotes, which corrupts the inner double-quotes of powershell -Command "..."
+        and strips PowerShell variable names ($n, $d, …).
+        When the command is a PowerShell invocation we run powershell.exe directly
+        and pass the script block as a properly-separated argument so that
+        QProcess (CreateProcess) handles quoting without collision.
+        For all other commands we fall back to cmd.exe /c.
+        """
+        import re
+        stripped = resolved.strip()
+        m = re.match(
+            r'^(powershell(?:\.exe)?|pwsh(?:\.exe)?)\s+.*?-[Cc]ommand\s+"(.+)"$',
+            stripped,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if m:
+            prog, script = m.group(1), m.group(2)
+            self._process.start(prog, ["-NoProfile", "-NonInteractive", "-Command", script])
+        else:
+            self._process.start("cmd.exe", ["/c", resolved])
+
     def _onReadyRead(self) -> None:
         data = self._process.readAll().data()
         try:
@@ -109,6 +136,7 @@ class PostProcessRunner(QtCore.QObject):
             self._logger.info(f"PostProcessRunner: finished (exit 0).")
         else:
             self._logger.warning(f"PostProcessRunner: finished with exit code {exitCode}.")
+        PostProcessRunner._active.discard(self)
         self.finished.emit(exitCode == 0)
 
     def _onError(self, error: QtCore.QProcess.ProcessError) -> None:
@@ -116,6 +144,7 @@ class PostProcessRunner(QtCore.QObject):
             f"PostProcessRunner: process error — {error.name} ({error.value}). "
             "Check that the program exists and the command is correct."
         )
+        PostProcessRunner._active.discard(self)
 
 
 # ------------------------------------------------------------------
@@ -153,3 +182,20 @@ def buildContext(downloader) -> dict[str, str]:
         "channel":   channel,
         "type":      info.type.toString(),
     }
+
+
+# ------------------------------------------------------------------
+# Convenience: fire-and-forget for any download completion site
+# ------------------------------------------------------------------
+
+def launch(downloader, override_cmd: str | None = None) -> None:
+    """
+    Run the configured post-process command for a finished downloader.
+    If override_cmd is provided (non-empty), it takes precedence over the
+    global setting. No-op if the resolved command is empty.
+    Callers need no lifecycle management.
+    """
+    from Core import App
+    cmd = override_cmd if override_cmd else App.Preferences.general.getPostProcessCommand()
+    if cmd:
+        PostProcessRunner(cmd, buildContext(downloader), App.Instance.logger).start()

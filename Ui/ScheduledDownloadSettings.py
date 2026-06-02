@@ -82,6 +82,12 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self._maxRecordingsSpin.setToolTip(T("Stop recording after this many streams (0 = unlimited). Resets when the app restarts."))
         condForm.addRow(T("Max recordings:"), self._maxRecordingsSpin)
 
+        self._postProcessEdit = QtWidgets.QLineEdit(parent=condGroup)
+        self._postProcessEdit.setPlaceholderText(T("Use global post-process command"))
+        self._postProcessEdit.setText(self.virtualPreset.getPostProcessCommand())
+        self._postProcessEdit.setToolTip(T("Override the global post-process command for this channel only. Leave empty to use the global setting."))
+        condForm.addRow(T("Post-process command:"), self._postProcessEdit)
+
         # Insert before the last widget (save/cancel button row) in the dialog layout
         dialogLayout = self._ui.Dialog.layout() if hasattr(self._ui, "Dialog") else self.layout()
         dialogLayout.insertWidget(dialogLayout.count() - 1, condGroup)
@@ -186,6 +192,7 @@ class ScheduledDownloadSettings(QtWidgets.QDialog, WindowGeometryManager):
         self.scheduledDownloadPreset.setGameFilter(self._gameFilterEdit.text())
         self.scheduledDownloadPreset.setTitleFilter(self._titleFilterEdit.text())
         self.scheduledDownloadPreset.setMaxRecordings(self._maxRecordingsSpin.value())
+        self.scheduledDownloadPreset.setPostProcessCommand(self._postProcessEdit.text())
 
     def getChannelFromText(self, text: str) -> str | None:
         parsedData = TwitchQueryParser.parseQuery(text)

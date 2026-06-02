@@ -82,6 +82,7 @@ class ScheduledDownloadPreset(Serializable):
         self.gameFilter = ""    # only record when game name contains this (case-insensitive; empty = any)
         self.titleFilter = ""   # only record when title contains this (case-insensitive; empty = any)
         self.maxRecordings = 0  # stop after this many recordings (0 = unlimited)
+        self.postProcessCommand = ""  # override global post-process command (empty = use global)
 
     def setEnabled(self, enabled: bool) -> None:
         self.enabled = enabled
@@ -178,6 +179,12 @@ class ScheduledDownloadPreset(Serializable):
 
     def getMaxRecordings(self) -> int:
         return self.maxRecordings
+
+    def setPostProcessCommand(self, command: str) -> None:
+        self.postProcessCommand = command.strip()
+
+    def getPostProcessCommand(self) -> str:
+        return self.postProcessCommand
 
     def selectResolution(self, resolutions: list[Resolution]) -> Resolution:
         if self.preferredQuality == self.AVAILABLE_QUALITY.BEST:

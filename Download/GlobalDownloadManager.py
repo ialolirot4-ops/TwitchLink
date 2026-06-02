@@ -98,9 +98,16 @@ class GlobalDownloadManager(QtCore.QObject):
         except Exception:
             return
 
-        # Only count successful downloads toward stats.
+        # Only process successful downloads.
         if downloader.status.getError() is not None:
             return
+
+        # Move file into {base}/{channel}/{type}/ BEFORE the UI's
+        # _downloadFinishHandler fires PostProcessRunner, so {file} in the
+        # post-process template already points to the new location.
+        if not downloader.status.isFileRemoved():
+            from Download.FolderOrganizer import organizeFile
+            organizeFile(downloader)
 
         fileSize: int = downloader.progress.byteSize
         App.Preferences.temp.updateDownloadStats(fileSize)

@@ -125,7 +125,12 @@ class DownloadInfo(Serializable):
 
     def setAbsoluteFileName(self, absoluteFileName: str) -> None:
         self.directory = os.path.dirname(absoluteFileName)
-        self.fileName, self.fileFormat = os.path.basename(absoluteFileName).rsplit(".", 1)
+        parts = os.path.basename(absoluteFileName).rsplit(".", 1)
+        if len(parts) == 2:
+            self.fileName, self.fileFormat = parts
+        else:
+            self.fileName = parts[0]
+            # sin extensión: conservar el formato actual sin modificarlo
 
     def setFileName(self, fileName: str) -> None:
         self.fileName = fileName

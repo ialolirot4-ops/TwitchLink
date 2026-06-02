@@ -61,41 +61,57 @@ def _build_palette() -> None:
     })
 
 # ─── Caché de imágenes LRU (máx 120) ─────────────────────────────────────────
+import weakref
 from collections import OrderedDict
 _CACHE: OrderedDict[str, QtGui.QPixmap] = OrderedDict()
 _CACHE_MAX = 120
+# Requests en vuelo: key -> list of weakref(label). Deduplica requests
+# concurrentes para la misma URL y evita setPixmap en labels eliminados.
+_IN_FLIGHT: dict[str, list] = {}
 
 def _cache_put(key: str, pm: QtGui.QPixmap) -> None:
     if key in _CACHE:
         _CACHE.move_to_end(key)
+        _CACHE[key] = pm
     else:
         _CACHE[key] = pm
         if len(_CACHE) > _CACHE_MAX:
             _CACHE.popitem(last=False)
-        return
-    _CACHE[key] = pm
 
 def _load(label: QtWidgets.QLabel, url: str, w: int, h: int, circle=False) -> None:
     if not url:
         return
     key = f"{url}|{w}x{h}|{'c' if circle else 'r'}"
+    # Cache hit
     if key in _CACHE:
         _CACHE.move_to_end(key)
         label.setPixmap(_CACHE[key])
         return
+    # Deduplicacion: adjuntar weakref al request en vuelo existente
+    ref = weakref.ref(label)
+    if key in _IN_FLIGHT:
+        _IN_FLIGHT[key].append(ref)
+        return
+    _IN_FLIGHT[key] = [ref]
     from Core import App
     req   = QtNetwork.QNetworkRequest(QtCore.QUrl(url))
     reply = App.NetworkAccessManager.get(req)
     def _done():
+        pm = QtGui.QPixmap()
         if reply.error() == QtNetwork.QNetworkReply.NetworkError.NoError:
             data = reply.readAll()
-            pm   = QtGui.QPixmap()
             pm.loadFromData(data)
-            if not pm.isNull():
-                pm = _scale(pm, w, h, circle)
-                _cache_put(key, pm)
-                label.setPixmap(pm)
-        reply.deleteLater()
+        if not pm.isNull():
+            pm = _scale(pm, w, h, circle)
+            _cache_put(key, pm)
+        # Entregar a todos los labels que esperaban esta URL
+        # (weakref protege contra labels ya eliminados)
+        for wref in _IN_FLIGHT.pop(key, []):
+            lbl = wref()
+            if lbl is not None and not pm.isNull():
+                lbl.setPixmap(pm)
+        # SafeNetworkReply llama deleteLater() en _replyFinished();
+        # no llamarlo de nuevo aqui para evitar destruir el objeto en ejecucion.
     reply.finished.connect(_done)
 
 def _scale(src: QtGui.QPixmap, w: int, h: int, circle: bool) -> QtGui.QPixmap:
@@ -803,11 +819,6 @@ class FavoritesPage(QtWidgets.QWidget):
         hl = QtWidgets.QHBoxLayout(hdr)
         hl.setContentsMargins(16, 0, 10, 0); hl.setSpacing(8)
 
-        title_lbl = QtWidgets.QLabel("Favoritos")
-        title_lbl.setStyleSheet(
-            f"font-size:15px;font-weight:700;color:{_P['text']};"
-        )
-        hl.addWidget(title_lbl)
         hl.addStretch()
 
         self._spin = QtWidgets.QLabel("")

@@ -91,17 +91,19 @@ class FavoriteChannel(Serializable):
 
     @property
     def followers_str(self) -> str:
+        from Core.App import T
         f = self._followers
         if not f:
             return ""
         if f >= 1_000_000:
-            return f"{f/1_000_000:.1f}M seguidores"
+            return f"{f/1_000_000:.1f}M {T('followers')}"
         if f >= 1_000:
-            return f"{f/1_000:.1f}K seguidores"
-        return f"{f:,} seguidores"
+            return f"{f/1_000:.1f}K {T('followers')}"
+        return f"{f:,} {T('followers')}"
 
     @property
     def last_broadcast_str(self) -> str:
+        from Core.App import T
         if not self._last_broadcast:
             return ""
         dt = self._last_broadcast.startedAt
@@ -112,17 +114,17 @@ class FavoriteChannel(Serializable):
             return ""
         if secs < 3600:
             m = secs // 60
-            return f"Hace {m} min" if m > 0 else "Hace unos segundos"
+            return T("n-min-ago", n=str(m)) if m > 0 else T("moments-ago")
         if secs < 86400:
             h = secs // 3600
-            return f"Hace {h}h"
+            return T("n-hours-ago", n=str(h))
         d = secs // 86400
         if d == 1:
-            return "Hace 1 día"
+            return T("yesterday")
         if d < 30:
-            return f"Hace {d} días"
+            return T("n-days-ago", n=str(d))
         m2 = d // 30
-        return f"Hace {m2} mes{'es' if m2>1 else ''}"
+        return T("n-months-ago", n=str(m2))
 
     @property
     def twitch_url(self) -> str:
@@ -174,41 +176,66 @@ class SortCriteria(enum.Enum):
         }[self]
 
 
-class _PollWorker(QtCore.QThread):
+class _BatchPoller(QtCore.QObject):
+    """
+    Lanza todos los requests GQL en el hilo principal (thread-safe con
+    QNetworkAccessManager) y emite pollFinished cuando todos responden
+    o vence el timeout global.
+    Reemplaza al antiguo _PollWorker (QThread) que violaba la regla de
+    Qt de usar QNetworkAccessManager solo desde su hilo de creacion.
+    """
     channelUpdated = QtCore.pyqtSignal(str, object)
-    finished       = QtCore.pyqtSignal()
+    pollFinished   = QtCore.pyqtSignal()
 
-    def __init__(self, logins: list[str], parent=None):
+    BATCH_TIMEOUT_MS = 15_000
+
+    def __init__(self, logins: list[str], parent: QtCore.QObject | None = None):
         super().__init__(parent=parent)
-        self._logins = list(logins)
+        self._pending = set(logins)
+        self._logins  = list(logins)
+        self._timeout = QtCore.QTimer(self)
+        self._timeout.setSingleShot(True)
+        self._timeout.setInterval(self.BATCH_TIMEOUT_MS)
+        self._timeout.timeout.connect(self._on_timeout)
 
-    def run(self):
+    def start(self) -> None:
+        """Lanza todos los requests GQL desde el hilo principal."""
         from Core import App
+        if not self._logins:
+            self.pollFinished.emit()
+            self.deleteLater()
+            return
+        self._timeout.start()
         for login in self._logins:
-            if self.isInterruptionRequested():
-                break
             try:
-                response   = App.TwitchGQL.getChannel(login=login)
-                result_box: list = []
-                loop       = QtCore.QEventLoop()
-
-                def on_finished(resp, _b=result_box, _l=loop):
-                    _b.append(getattr(resp, "_data", None))
-                    _l.quit()
-
-                response.finished.connect(on_finished, QtCore.Qt.ConnectionType.DirectConnection)
-                timer = QtCore.QTimer()
-                timer.setSingleShot(True)
-                timer.setInterval(12_000)
-                timer.timeout.connect(loop.quit)
-                timer.start()
-                loop.exec()
-                timer.stop()
-
-                self.channelUpdated.emit(login, result_box[0] if result_box else None)
+                response = App.TwitchGQL.getChannel(login=login)
+                response.finished.connect(
+                    self._make_handler(login)
+                )
             except Exception:
-                self.channelUpdated.emit(login, None)
-        self.finished.emit()
+                self._complete(login, None)
+
+    def _make_handler(self, login: str):
+        def on_finished(resp):
+            self._complete(login, getattr(resp, "_data", None))
+        return on_finished
+
+    def _complete(self, login: str, data) -> None:
+        if login not in self._pending:
+            return
+        self._pending.discard(login)
+        self.channelUpdated.emit(login, data)
+        if not self._pending:
+            self._timeout.stop()
+            self.pollFinished.emit()
+            self.deleteLater()
+
+    def _on_timeout(self) -> None:
+        for login in list(self._pending):
+            self.channelUpdated.emit(login, None)
+        self._pending.clear()
+        self.pollFinished.emit()
+        self.deleteLater()
 
 
 class FavoritesManager(QtCore.QObject):
@@ -229,7 +256,7 @@ class FavoritesManager(QtCore.QObject):
         super().__init__(parent=parent)
         self._channels: list[FavoriteChannel] = []
         self._sort     = SortCriteria.STATUS_THEN_VIEWERS
-        self._worker: _PollWorker | None = None
+        self._poller: _BatchPoller | None = None
         self._initializing = True
         self._timer    = QtCore.QTimer(self)
         self._timer.setInterval(self.POLL_INTERVAL_MS)
@@ -306,16 +333,22 @@ class FavoritesManager(QtCore.QObject):
 
     # ── Polling ───────────────────────────────────────────────────────────────
     def poll(self) -> None:
-        if not self._channels or (self._worker and self._worker.isRunning()):
+        if not self._channels or self._poller is not None:
             return
         logins = [ch.login for ch in self._channels]
-        self._worker = _PollWorker(logins, parent=self)
-        self._worker.channelUpdated.connect(self._on_channel_updated)
-        self._worker.finished.connect(self._on_poll_finished)
+        self._poller = _BatchPoller(logins, parent=self)
+        self._poller.channelUpdated.connect(self._on_channel_updated)
+        self._poller.pollFinished.connect(self._on_poll_finished)
         self.pollStarted.emit()
-        self._worker.start()
+        self._poller.start()
 
     def poll_now(self) -> None:
+        """Fuerza un poll inmediato, respetando MIN_POLL_INTERVAL como cooldown."""
+        if self._poller is not None:
+            return  # ya hay un poll en curso
+        remaining = self._timer.remainingTime()
+        if remaining != -1 and (self.POLL_INTERVAL_MS - remaining) < self.MIN_POLL_INTERVAL:
+            return  # demasiado pronto para volver a hacer poll
         self._timer.stop()
         self.poll()
         self._timer.start()
@@ -350,10 +383,8 @@ class FavoritesManager(QtCore.QObject):
 
     def _on_poll_finished(self) -> None:
         self._initializing = False
-        # Liberar el QThread anterior para evitar acumulación en sesiones largas
-        if self._worker is not None:
-            self._worker.deleteLater()
-            self._worker = None
+        # _BatchPoller llama deleteLater() sobre si mismo al terminar
+        self._poller = None
         self.pollFinished.emit()
         self.liveCountChanged.emit(self.live_count())
 

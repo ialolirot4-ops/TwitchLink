@@ -86,6 +86,29 @@ class Settings(QtWidgets.QWidget):
         # Insert at the bottom of whichever tab contains bookmarkArea
         generalTab = self._ui.bookmarkArea.parent()
         generalTab.layout().addWidget(hookGroup)
+
+        # ── Organizar descargas por canal / tipo ──────────────────────────────
+        organizeGroup = QtWidgets.QGroupBox(T("Organize downloads"), parent=self)
+        organizeLayout = QtWidgets.QVBoxLayout(organizeGroup)
+
+        self._organizeCheck = QtWidgets.QCheckBox(
+            T("Organize into subfolders by channel and type"),
+            parent=organizeGroup,
+        )
+        self._organizeCheck.setChecked(App.Preferences.general.isOrganizeByChannelEnabled())
+        self._organizeCheck.toggled.connect(App.Preferences.general.setOrganizeByChannelEnabled)
+        organizeLayout.addWidget(self._organizeCheck)
+
+        organizeInfo = QtWidgets.QLabel(
+            T("#When enabled, finished files are moved to:\n"
+              "{directory} / {channel} / {type} / filename.ext"),
+            parent=organizeGroup,
+        )
+        organizeInfo.setWordWrap(True)
+        organizeInfo.setStyleSheet("color: palette(shadow); font-size: 11px;")
+        organizeLayout.addWidget(organizeInfo)
+
+        generalTab.layout().addWidget(organizeGroup)
         # ─────────────────────────────────────────────────────────────────────
         for translationPack in App.Translator.getTranslationPacks():
             self._ui.language.addItem(translationPack.getDisplayName(), userData=translationPack.getId())
@@ -225,6 +248,10 @@ class Settings(QtWidgets.QWidget):
             self._speedLimitSpin.blockSignals(False)
         # Sync post-process command
         self._hookEdit.setText(App.Preferences.general.getPostProcessCommand())
+        # Sync organize checkbox
+        self._organizeCheck.blockSignals(True)
+        self._organizeCheck.setChecked(App.Preferences.general.isOrganizeByChannelEnabled())
+        self._organizeCheck.blockSignals(False)
 
     def windowCloseChanged(self, index: int) -> None:
         App.Preferences.general.setSystemTrayEnabled(False if index == 0 else True)

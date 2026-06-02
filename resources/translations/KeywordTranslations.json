@@ -586,5 +586,33 @@
   "save-as": {
     "en": "Save As",
     "ko": "다른 이름으로 저장"
+  },
+  "followers": {
+    "en": "followers",
+    "ko": "팔로워"
+  },
+  "moments-ago": {
+    "en": "Moments ago",
+    "ko": "방금 전"
+  },
+  "n-min-ago": {
+    "en": "{n} min ago",
+    "ko": "{n}분 전"
+  },
+  "n-hours-ago": {
+    "en": "{n}h ago",
+    "ko": "{n}시간 전"
+  },
+  "yesterday": {
+    "en": "Yesterday",
+    "ko": "어제"
+  },
+  "n-days-ago": {
+    "en": "{n}d ago",
+    "ko": "{n}일 전"
+  },
+  "n-months-ago": {
+    "en": "{n}mo ago",
+    "ko": "{n}개월 전"
   }
 }

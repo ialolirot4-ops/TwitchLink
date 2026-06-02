@@ -185,10 +185,12 @@ class DownloadConfig:
                 postprocessors.append({"key": "FFmpegEmbedSubtitle"})
             if self.embed_thumb:
                 postprocessors.append({"key": "EmbedThumbnail"})
-            if self.metadata:
-                postprocessors.append({"key": "FFmpegMetadata", "add_metadata": True})
-            if self.chapters:
-                postprocessors.append({"key": "FFmpegSplitChapters"})
+            if self.metadata or self.chapters:
+                postprocessors.append({
+                    "key": "FFmpegMetadata",
+                    "add_metadata": bool(self.metadata),
+                    "add_chapters": bool(self.chapters),
+                })
 
         opts = {
             "format": format_str,
@@ -246,7 +248,9 @@ class InfoExtractorWorker(QtCore.QThread):
         opts = {
             "quiet": True,
             "no_warnings": True,
-            "extract_flat": "in_playlist",
+            # extract_flat omitido intencionalmente: con "in_playlist" yt-dlp
+            # devuelve solo un esqueleto sin thumbnail, duración ni descripción
+            # para URLs de video individual. skip_download=True es suficiente.
             "skip_download": True,
         }
         if self.cookies_browser:

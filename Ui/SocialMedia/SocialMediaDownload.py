@@ -9,6 +9,7 @@ Agrega este widget como una nueva pestaña en Ui/MainWindow.py:
 from PyQt6 import QtCore, QtWidgets, QtGui
 import os
 
+from Core import App
 from Services.SocialMedia.YtDlpService import (
     Platform, SocialMediaInfo, DownloadConfig,
     InfoExtractorWorker, SocialMediaDownloadWorker,
@@ -159,7 +160,7 @@ class SocialMediaDownload(QtWidgets.QWidget):
         subtitle = QtWidgets.QLabel(
             "YouTube · TikTok · Instagram · Twitter/X · Facebook · y +1800 sitios"
         )
-        subtitle.setStyleSheet("color: palette(shadow); font-size: 11px;")
+        subtitle.setStyleSheet("color: palette(#c5c5c5); font-size: 11px;")
         root.addWidget(title_lbl)
         root.addWidget(subtitle)
 
@@ -286,11 +287,13 @@ class SocialMediaDownload(QtWidgets.QWidget):
         adv_layout.addWidget(QtWidgets.QLabel("Límite de velocidad:"), 0, 0)
         self._rate_edit = QtWidgets.QLineEdit()
         self._rate_edit.setPlaceholderText("Ej: 5M, 500K  (vacío = sin límite)")
+        self._rate_edit.setText(App.Preferences.general.getSocialMediaRateLimit())
         adv_layout.addWidget(self._rate_edit, 0, 1)
 
         adv_layout.addWidget(QtWidgets.QLabel("Proxy:"), 0, 2)
         self._proxy_edit = QtWidgets.QLineEdit()
         self._proxy_edit.setPlaceholderText("http://user:pass@host:port")
+        self._proxy_edit.setText(App.Preferences.general.getSocialMediaProxy())
         adv_layout.addWidget(self._proxy_edit, 0, 3)
 
         adv_layout.addWidget(QtWidgets.QLabel("Cookies desde:"), 1, 0)
@@ -493,6 +496,10 @@ class SocialMediaDownload(QtWidgets.QWidget):
         proxy = self._proxy_edit.text().strip()
         if proxy:
             cfg.proxy = proxy
+        # Persistir proxy y rate limit para la próxima sesión
+        App.Preferences.general.setSocialMediaProxy(proxy)
+        App.Preferences.general.setSocialMediaRateLimit(rate)
+        App.Preferences.save()
         cfg.cookies_from_browser = self._get_cookies()
         start = self._pl_start.value()
         end   = self._pl_end.value()

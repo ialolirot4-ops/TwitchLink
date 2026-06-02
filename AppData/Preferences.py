@@ -51,6 +51,10 @@ class General(Serializable):
         self._useSystemTray = False
         self._bookmarks = []
         self._postProcessCommand = ""   # command template run after each successful download
+        # Automatically move finished files into {dir}/{channel}/{type}/ subfolders.
+        self._organizeByChannel = True
+        self._socialMediaProxy = ""     # persisted proxy for social media downloads
+        self._socialMediaRateLimit = "" # persisted rate limit for social media downloads
 
     def setOpenProgressWindowEnabled(self, enabled: bool) -> None:
         self._openProgressWindow = enabled
@@ -67,6 +71,21 @@ class General(Serializable):
     def setPostProcessCommand(self, command: str) -> None:
         self._postProcessCommand = command.strip()
 
+    def setOrganizeByChannelEnabled(self, enabled: bool) -> None:
+        self._organizeByChannel = enabled
+
+    def setSocialMediaProxy(self, proxy: str) -> None:
+        self._socialMediaProxy = proxy.strip()
+
+    def getSocialMediaProxy(self) -> str:
+        return self._socialMediaProxy
+
+    def setSocialMediaRateLimit(self, rate: str) -> None:
+        self._socialMediaRateLimit = rate.strip()
+
+    def getSocialMediaRateLimit(self) -> str:
+        return self._socialMediaRateLimit
+
     def isOpenProgressWindowEnabled(self) -> bool:
         return self._openProgressWindow
 
@@ -82,12 +101,15 @@ class General(Serializable):
     def getPostProcessCommand(self) -> str:
         return self._postProcessCommand
 
+    def isOrganizeByChannelEnabled(self) -> bool:
+        return self._organizeByChannel
+
 
 class Templates(Serializable):
     def __init__(self):
-        self._streamFilename = "[{type}] [{channel_name}] [{date}] {title} {resolution}"
-        self._videoFilename = "[{type}] [{channel_name}] [{date}] {title} {resolution}"
-        self._clipFilename = "[{type}] [{channel_name}] {title}"
+        self._streamFilename = "{title} [{date}] {resolution}"
+        self._videoFilename = "{title} [{date}] {resolution}"
+        self._clipFilename = "{title} [{date}]"
 
     def setStreamFilename(self, filename: str) -> None:
         self._streamFilename = filename

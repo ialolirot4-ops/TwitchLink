@@ -72,8 +72,8 @@ class AudioFormatHistory:
 
 class StreamHistory(BaseOptionHistory, FileHistory, AudioFormatHistory, Serializable):
     SUPPORTED_FORMATS = [
-        "ts",
-        "mp4"
+        "mp4",
+        "ts"
     ]
 
     def __init__(self):
@@ -96,8 +96,8 @@ class StreamHistory(BaseOptionHistory, FileHistory, AudioFormatHistory, Serializ
 
 class VideoHistory(BaseOptionHistory, FileHistory, AudioFormatHistory, Serializable):
     SUPPORTED_FORMATS = [
-        "ts",
-        "mp4"
+        "mp4",
+        "ts"
     ]
 
     def __init__(self):

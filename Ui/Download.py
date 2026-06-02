@@ -185,6 +185,8 @@ class Download(QtWidgets.QWidget):
         else:
             self.showStatus(T("download-complete"))
             self.showProgress(100)
+            from Download.Downloader.Postprocessrunner import launch as _launchPostProcess
+            _launchPostProcess(self._downloader)
         if not self._downloader.status.isFileRemoved():
             self._ui.openFileButton.show()
         self._ui.downloadViewControlBar.openLogsButton.setVisible()
